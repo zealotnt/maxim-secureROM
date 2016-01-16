@@ -1,0 +1,125 @@
+
+
+bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../keys/maximtestcrk.key
+bash ./build_application_USB.sh ../../../SLA/build/sla_template.sbin buildapp ../keys/maximtestcrk.key
+
+bash ./sendscp.sh COM5 buildapp
+bash ./sendscp.sh COM9 buildapp
+
+./ca_sign_build algo=ecdsa ca=sla_template.bin sca=sla_template.sbin load_address=10000000 jump_address=10000020 arguments= version=01000003 application_version=01030000 verbose=yes
+
+
+bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../keys/maximtestcrk.key
+
+
+********************************* Cách tạo file sbin:***************************************************************************************************
+	
+	+ Mở cygwin 32 bit lên (chỉ cygwin 32bit mới sử dụng được ca_sign_build, tương tự như việc khởi động eclipse bằng cygwin 32)
+	+ Vào thư mục ca_sign_build
+	+ Chạy lệnh sau:
+	./ca_sign_build algo=ecdsa ca=sla_template.bin sca=sla_template.sbin load_address=10000000 jump_address=10000020 arguments= version=01000003 application_version=01030000 verbose=yes
+
+	--> Hoặc thư mục trong gói example BSP đã có sẵn CaSignBuild
+
+
+
+********************************** Cách flash file sbin vào board: *************************************************************************************
+	+ Sử dụng scp protocol qua Uart để flash cho board
+	+ Mở cywin 64 bit, vào thư mục /home/USER/secureROM/Host/customer_scripts/scripts
+
+	+ Gõ:
+		bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../keys/maximtestcrk.key
+		bash ./build_application.sh ../../../SLA/build/blink100.sbin buildapp100 ../keys/maximtestcrk.key
+		bash ./build_application.sh ../../../SLA/build/blink500.sbin buildapp500 ../keys/maximtestcrk.key
+
+		bash ./build_application.sh /home/root/BlueFinTest/firmwareUpgrade/PACKAGE_ANGELA_1.2.2/SLA/build/blink500.sbin buildapp /home/root/BlueFinTest/firmwareUpgrade/PACKAGE_ANGELA_1.2.2/Host/customer_scripts/keys/maximtestcrk.key
+
+		--> Trong đó:
+				+ file build_application.sh để build ra các script để chạy SCP.
+				+ sla_template.sbin nằm ở thư mục: /home/USER/secureROM/SLA/build
+				+ ../keys/maximtestcrk.key là key để thực hiện quá trình encrypt/decrypt khi SCP.
+
+	+ Tiếp theo dùng lệnh:
+		bash ./sendscp.sh COM5 buildapp
+		bash ./sendscp.sh /dev/ttyUSB0 buildapp
+		Trong đó:
+			sendscp.sh là script để gọi đến code python (đã hiện thực SCP protocol và gửi đến board)
+			COM5 là cổng tên COM trên PC đang gắn với board
+			buildapp là thư mục chứa script SCP (vừa tạo ở bước trước)
+
+
+
+********************************** Cách flash file sbin vào board, sử dụng SEGGER Jlink *************************************************************************************	
+	+ Sử dụng segger's J-link để flash cho board (đổi tên file sbin thành file bin và làm theo trình tự sau - có thể tham khảo trong file evkit_software_user_guide)
+		-> gõ lần lượt:
+			Device MAX32550
+			Speed 2000
+			r
+			h
+			loadbin <name of bin file.bin>, <internal flash address of mcu> (which is = 0x10000000)
+
+********************************** Vài vấn đề khi làm việc với secureROM
+*************************************************************************************	
+	+ Thư mục gốc: UDT.Second.Level.Application_Template_Trunk build ko đc
+		trong khi các thư mục khác chép từ thư mục gốc lại build đc
+		--> thử xóa file .bin trong ext_tools/ca_sign_build/sla_template.bin
+
+
+
+
+
+
+*************************************************************************************
+*************************************************************************************
+*************************************************************************************
+13th Nov 2015:
+	Task: Fw upgrade on BluefinBoard:
+		+ Modify build_application.sh on host: 
+			--> build .sbin file and output tar folder, also send scp to external board
+		+ Modify sendscp.sh on Linux board:
+			--> Add retry function
+			--> Add
+		+ Fix bug when use new driver package. Interrupts don't work.
+
+	- 1st step: build sbin to scp packages:
+		bash ./build_application_mod.sh SLA/sla_template.sbin buildOut
+		bash ./build_application_mod.sh SLA/sla_template.sbin buildOut yes
+			Bản rút gọn của:
+			bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../keys/maximtestcrk.key
+			Khi đó, lệnh này sẽ nhận input là "file.sbin", 
+				+ tạo một thư mục "file", sẽ tạo "file?" trong đó ? sẽ là số nếu file trước đó bị trùng.
+				+ (rút gọn bớt so với bản cũ): nên để file maximtestsrk.key vào cùng thư mục với build_app*.sh.
+				+ sau khi tạo xong thư mục chứa scp packages, nó sẽ nén thư mục này
+				+ và send scp cho board nếu cần thiết.
+	- 2nd step: send_scp_mod.sh
+		bash ./sendscp_mod.sh /dev/ttyUSB0 buildOut.tar.gz
+		Bản sửa lại của:
+			bash ./sendscp.sh COM5 buildapp
+			Khi đó, lệnh này sẽ nhận input là "buildapp.tar.gz", 
+				+ Giải nén file buildapp.tar.gz (mong là bên kia khi nén lại đã đưa vào 1 thư mục)
+				+ trigger gpio cho board reset (timing làm sao để xác suất thành công là cao nhất)
+				+ gọi đến file python, add thêm tính năng retry (retry trong code python khá là vô dụng, vì khi đã fail rồi (not ack from MCU) thì sẽ ko chạy tiếp đc nữa) --> Reset bằng GPIO và thực hiện lại.
+
+
+
+*************************************************************************************
+*************************************************************************************
+*************************************************************************************
+11th Jan 2016
+	[1] Build testRTC for Bluefin test:
+		in: /home/zealot/Desktop/secureROM/Host/customer_scripts/scripts
+		copy bin file to /SLA/... example: /SLA/testRTC.bin
+		0. bash ./casignBuild.sh SLA/testRTC.bin
+		1. bash ./build_application_mod.sh buildSLA/testRTC.sbin testRTC
+		2. bash ./sendscp_mod.sh /dev/ttyUSB0 testRTC
+
+	[2] Shorter way than [1]:
+		1. bash ./doItAll.sh SLA/testRTC.bin /dev/ttyUSB0
+
+	Write CRK to Maxim User's OTP:
+		in: /home/zealot/Desktop/secureROM/Host/customer_scripts/scripts
+		bash ./writecrk.sh /dev/ttyUSB0 ../../../SCP_Packets/prod_p3_write_crk/
+
+
+		bash ./writecrk.sh /dev/ttymxc4 ../../../SCP_Packets/prod_p3_write_crk/
+		bash ./sendscp.sh /dev/ttymxc4 ../../../SCP_Packets/prod_p3_write_crk/
