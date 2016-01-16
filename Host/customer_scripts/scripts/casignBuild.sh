@@ -21,6 +21,10 @@ version=01000003 \
 application_version=01010000 \
 verbose=yes
 
-cp "$fileName.sbin" ../scripts/SLA/
+cp "$fileName.sbin" ../scripts/buildSLA/
+
+cd ../scripts
 
 echo "Copied $fileName.sbin to /scripts/SLA/"
+
+exit 0

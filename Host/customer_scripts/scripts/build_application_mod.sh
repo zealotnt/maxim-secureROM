@@ -97,7 +97,7 @@ KEYFILE=$(readlink -e -- "$key")  || {
 }
 
 #remove end slash if any
-output=${output%/}
+output=buildSCP/${output%/}
 
 rm -rf -- "$output"
 mkdir  -- "$output"
@@ -216,3 +216,10 @@ if [ "$scp_to_board" == "yes" ]; then
 	scp "$output_compress_file" "$finalPath"
 	#scp "$output_compress_file" ubuntu@192.168.8.125:/home/ubuntu/workspace_BluefinFWUpgrade/secureROM/Host/customer_scripts/scripts
 fi
+
+# echo "going back to script folder"
+# pathNow=$(pwd)
+# echo $pathNow
+cd ../../
+# pathNow=$(pwd)
+# echo $pathNow'

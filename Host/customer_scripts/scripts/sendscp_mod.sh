@@ -51,11 +51,12 @@ case $# in
 	;;
 esac
 
+sync
 echo ""
-if [ -d "$inputCompressed" ]; then
+if [ -d "buildSCP/$inputCompressed" ]; then
 	bFolder=1
 else
-	if [ ! -e "$inputCompressed" ]; then
+	if [ ! -e "buildSCP/$inputCompressed" ]; then
 	echo "Error:: the <input_compressed_file> ($inputCompressed) does not exist."
 	exit 1
 	fi
@@ -67,10 +68,10 @@ fi
 if [ $bCompress == 1 ]; then
 	input=${inputCompressed%.tar.gz}
 	tar -xvf "$inputCompressed"
-	cd -- "$input"  ||  exit
+	cd -- "buildSCP/$input"  ||  exit
 elif [ $bFolder == 1 ]; then
 	input=$2
-	cd -- "$input"  ||  exit
+	cd -- "buildSCP/$input"  ||  exit
 else
 	echo "Input expected !!"
 	exit 1
