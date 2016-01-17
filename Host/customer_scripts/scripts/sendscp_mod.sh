@@ -1,41 +1,15 @@
-#!/bin/sh
+#!/bin/bash
+# Import color code variables
+. ./colorCode.sh
 
-# Copyright (C) 2012-2014 Maxim Integrated Products, Inc., All Rights Reserved.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL MAXIM INTEGRATED BE LIABLE FOR ANY CLAIM, DAMAGES
-# OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
-#
-# Except as contained in this notice, the name of Maxim Integrated 
-# Products, Inc. shall not be used except as stated in the Maxim Integrated 
-# Products, Inc. Branding Policy.
-#
-# The mere transfer of this software does not imply any licenses
-# of trade secrets, proprietary technology, copyrights, patents,
-# trademarks, maskwork rights, or any other form of intellectual
-# property whatsoever. Maxim Integrated Products, Inc. retains all 
-# ownership rights.
-
-usage() {
-	echo " Syntax: sendscp.sh <serialport> <input_dir>"
-	echo "    <serialport> = serial port device (e.g. /dev/ttyS0 (linux) or COM1 (windows))"
+usage() 
+{
+	echo " Syntax: sendscp.sh <serialport> <input_dir> <Toogle>"
+	echo "    <serialport> = serial port device (e.g. //dev//ttyS0 (linux) or COM1 (windows))"
 	echo "    <input_dir> = directory that contains the SCP packet list"
+	echo "    <Toogle> = accept 'y//n', y for toggle reset GPIO, n for manually reset it"
 	echo "Note: "
-	echo "See also: build_application.sh to build an SCP script."
+	echo "See also: build_application_mod.sh to build an SCP script."
 }
 
 TOOLDIR=$(readlink -e $(dirname $0))
@@ -45,11 +19,21 @@ bCompress=0
 case $# in
 2)	readonly serialport=$1
 	readonly inputCompressed=$2
+	readonly bToogleGPIO='n'
+	;;
+3)	readonly serialport=$1
+	readonly inputCompressed=$2
+	readonly bToogleGPIO=$3
 	;;
 *)	usage  >&2
 	exit 2
 	;;
 esac
+
+if [[ ($bToogleGPIO != 'y') || ($bToogleGPIO != 'n') ]]; then
+	echo "param <Toogle> not invalid, only 'y/n' expected"
+	exit 2
+fi
 
 sync
 echo ""
@@ -99,11 +83,27 @@ echo "Error:: the <input_dir> ($input) does not seem to contain a SCP script."
 exit 1
 fi
 
+
+if [ $bToogleGPIO == 'y' ]; then
+	echo "{KRED}Going to enable GPIO81 of iMX6{KRESET}"
+	echo 81 > /sys/class/gpio/export
+	echo "{KRED}Pull the GPIO_Reset pin low{KRESET}"
+	echo low > /sys/class/gpio/gpio81/direction
+fi
+
 echo "Ready to execute $(readlink -e .)"
-read -p "Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!" reply
+read -p "{KLRED}{KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!{KRESET}" reply
 echo "Please wait..."
 #Waiting to avoid the USB SCP time window (4s by default)
-sleep 4
+timeSleep=3.5
+
+if [ $bToogleGPIO == 'y' ]; then
+	echo "{KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second{KRESET}"
+	echo high > /sys/class/gpio/gpio81/direction
+fi
+
+sleep $timeSleep
+
 
 $TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 
