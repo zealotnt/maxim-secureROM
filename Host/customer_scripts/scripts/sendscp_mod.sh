@@ -12,7 +12,13 @@ usage()
 	echo "See also: build_application_mod.sh to build an SCP script."
 }
 
-TOOLDIR=$(readlink -e $(dirname $0))
+if [ $# != 3 ]; then
+	TOOLDIR=$(readlink -e $(dirname $0))
+else
+	TOOLDIR=$(pwd)
+	echo -e "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
+fi
+
 bFolder=0
 bCompress=0
 
@@ -30,7 +36,7 @@ case $# in
 	;;
 esac
 
-if [[ ($bToogleGPIO != 'y') || ($bToogleGPIO != 'n') ]]; then
+if [[ ($bToogleGPIO != 'y') && ($bToogleGPIO != 'n') ]]; then
 	echo "param <Toogle> not invalid, only 'y/n' expected"
 	exit 2
 fi
@@ -85,9 +91,9 @@ fi
 
 
 if [ $bToogleGPIO == 'y' ]; then
-	echo "{KRED}Going to enable GPIO81 of iMX6{KRESET}"
+	echo -e "{KRED}Going to enable GPIO81 of iMX6{KRESET}"
 	echo 81 > /sys/class/gpio/export
-	echo "{KRED}Pull the GPIO_Reset pin low{KRESET}"
+	echo -e "{KRED}Pull the GPIO_Reset pin low{KRESET}"
 	echo low > /sys/class/gpio/gpio81/direction
 fi
 
@@ -95,10 +101,10 @@ echo "Ready to execute $(readlink -e .)"
 read -p "{KLRED}{KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!{KRESET}" reply
 echo "Please wait..."
 #Waiting to avoid the USB SCP time window (4s by default)
-timeSleep=3.5
+timeSleep=2
 
 if [ $bToogleGPIO == 'y' ]; then
-	echo "{KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second{KRESET}"
+	echo -e "{KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second{KRESET}"
 	echo high > /sys/class/gpio/gpio81/direction
 fi
 
@@ -108,10 +114,18 @@ sleep $timeSleep
 $TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 
 if [ $? -ne 0 ] ; then
-echo "ERROR."
-echo "Make sure you pressed [Enter] right after powering-up the system."
-echo "Make sure you have no terminal opened on $serialport."
-exit 1
+	echo "ERROR."
+	echo "Make sure you pressed [Enter] right after powering-up the system."
+	echo "Make sure you have no terminal opened on $serialport."
+	exit 1
 fi
 
-echo "SUCCESS."
+echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
+
+
+if [ $bToogleGPIO == 'y' ]; then
+	echo "Reseting Maxim"
+	echo low > /sys/class/gpio/gpio81/direction
+	sleep 1
+	echo high > /sys/class/gpio/gpio81/direction
+fi

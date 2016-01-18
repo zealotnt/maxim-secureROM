@@ -58,7 +58,7 @@ def scan():
     available = []
 
     if os.name == 'posix':
-        available = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
+        available = glob.glob('/dev/ttymxc*') + glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
     else:
         for i in range(256):
             try:

@@ -105,7 +105,12 @@ bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../key
 *************************************************************************************
 *************************************************************************************
 *************************************************************************************
+All above, old version, just may work on first initial commit
 11th Jan 2016
+	[0] Setup environment for secure ROM tools:
+		in: /secureROM/ run:
+		bash setup.sh linux ./
+		(for more info, go to "UG25T01_readme.pdf")
 	[1] Build testRTC for Bluefin test:
 		in: /home/zealot/Desktop/secureROM/Host/customer_scripts/scripts
 		copy bin file to /SLA/... example: /SLA/testRTC.bin
@@ -114,12 +119,14 @@ bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../key
 		2. bash ./sendscp_mod.sh /dev/ttyUSB0 testRTC
 
 	[2] Shorter way than [1]:
-		1. bash ./doItAll.sh SLA/testRTC.bin /dev/ttyUSB0
+		1. bash ./doItAll.sh SLA/testRTC.bin /dev/ttyUSB0 									--> Work on PC
 
 	Write CRK to Maxim User's OTP:
 		in: /home/zealot/Desktop/secureROM/Host/customer_scripts/scripts
-		bash ./writecrk.sh /dev/ttyUSB0 ../../../SCP_Packets/prod_p3_write_crk/
+		bash ./writecrk.sh /dev/ttyUSB0 ../../../SCP_Packets/prod_p3_write_crk/ 			--> Work on PC
 
 
-		bash ./writecrk.sh /dev/ttymxc4 ../../../SCP_Packets/prod_p3_write_crk/
-		bash ./sendscp.sh /dev/ttymxc4 ../../../SCP_Packets/prod_p3_write_crk/
+		bash ./writecrk.sh /dev/ttymxc4 ../../../SCP_Packets/prod_p3_write_crk/				--> Not work
+		bash ./sendscp_mod.sh /dev/ttymxc4 ../../../../SCP_Packets/prod_p3_write_crk/ y 	--> Flash Key
+		bash ./sendscp_mod.sh /dev/ttymxc4 prod_p3_write_crk/ y 							--> Flash Key
+		bash ./sendscp_mod.sh /dev/ttymxc4 testUARTEcho/ y 									--> Flash App
