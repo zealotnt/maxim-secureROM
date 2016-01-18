@@ -56,8 +56,12 @@ bash ./build_application.sh ../../../SLA/build/sla_template.sbin buildapp ../key
 			Speed 2000
 			r
 			h
+			# erase entire memory, to ensure it works
+			erase
+			# load binary file (file must be ending with ,bin), in Ubuntu, it is absolute path to the file
 			loadbin <name of bin file.bin>, <internal flash address of mcu> (which is = 0x10000000)
-
+			# Start the CPU core
+			go
 ********************************** Vài vấn đề khi làm việc với secureROM
 *************************************************************************************	
 	+ Thư mục gốc: UDT.Second.Level.Application_Template_Trunk build ko đc
