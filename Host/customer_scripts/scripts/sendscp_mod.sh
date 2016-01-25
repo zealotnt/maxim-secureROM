@@ -91,20 +91,25 @@ fi
 
 
 if [ $bToogleGPIO == 'y' ]; then
-	echo -e "{KRED}Going to enable GPIO81 of iMX6{KRESET}"
-	echo 81 > /sys/class/gpio/export
-	echo -e "{KRED}Pull the GPIO_Reset pin low{KRESET}"
+	echo -e "${KRED}Going to enable GPIO81 of iMX6${KRESET}"
+	if [ ! -d /sys/class/gpio/gpio81 ]; then
+		echo "Export gpio81 for manually usage"
+		echo 81 > /sys/class/gpio/export
+	else
+		echo "Already exported"
+	fi
+	echo -e "${KRED}Pull the GPIO_Reset pin low${KRESET}"
 	echo low > /sys/class/gpio/gpio81/direction
 fi
 
 echo "Ready to execute $(readlink -e .)"
-read -p "{KLRED}{KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!{KRESET}" reply
+read -p "${KLRED}${KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!${KRESET}" reply
 echo "Please wait..."
 #Waiting to avoid the USB SCP time window (4s by default)
 timeSleep=2
 
 if [ $bToogleGPIO == 'y' ]; then
-	echo -e "{KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second{KRESET}"
+	echo -e "${KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second${KRESET}"
 	echo high > /sys/class/gpio/gpio81/direction
 fi
 
