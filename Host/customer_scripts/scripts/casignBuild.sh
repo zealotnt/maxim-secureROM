@@ -21,10 +21,13 @@ version=01000003 \
 application_version=01010000 \
 verbose=yes
 
+# Copy as .sbin file name, for SCP purpose
 cp "$fileName.sbin" ../scripts/buildSLA/
-
+# Copy as .bin file name, for JLink fw loading purpose
+cp "$fileName.sbin" ../scripts/buildSLA/"binNamed_$fileName.bin"
 cd ../scripts
 
-echo "Copied $fileName.sbin to /scripts/SLA/"
+echo "Copied $fileName.sbin as /scripts/SLA/$fileName.sbin"
+echo "Copied $fileName.sbin as /scripts/SLA/binNamed_$fileName.bin"
 
 exit 0
