@@ -25,6 +25,7 @@ verbose=yes
 cp "$fileName.sbin" ../scripts/buildSLA/
 # Copy as .bin file name, for JLink fw loading purpose
 cp "$fileName.sbin" ../scripts/buildSLA/"binNamed_$fileName.bin"
+rm "$fileName.sbin"
 cd ../scripts
 
 echo "Copied $fileName.sbin as /scripts/SLA/$fileName.sbin"
