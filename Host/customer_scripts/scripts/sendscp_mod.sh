@@ -15,7 +15,8 @@ usage()
 if [ $# != 3 ]; then
 	TOOLDIR=$(readlink -e $(dirname $0))
 else
-	TOOLDIR=$(pwd)
+	#TOOLDIR=$(pwd)
+	TOOLDIR=/home/root/secureROM-Sirius/Host/customer_scripts/scripts/lib/
 	echo -e "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
 fi
 
@@ -43,10 +44,10 @@ fi
 
 sync
 echo ""
-if [ -d "buildSCP/$inputCompressed" ]; then
+if [ -d "$inputCompressed" ]; then
 	bFolder=1
 else
-	if [ ! -e "buildSCP/$inputCompressed" ]; then
+	if [ ! -e "$inputCompressed" ]; then
 	echo "Error:: the <input_compressed_file> ($inputCompressed) does not exist."
 	exit 1
 	fi
@@ -58,10 +59,10 @@ fi
 if [ $bCompress == 1 ]; then
 	input=${inputCompressed%.tar.gz}
 	tar -xvf "$inputCompressed"
-	cd -- "buildSCP/$input"  ||  exit
+	cd -- "$input"  ||  exit
 elif [ $bFolder == 1 ]; then
 	input=$2
-	cd -- "buildSCP/$input"  ||  exit
+	cd -- "$input"  ||  exit
 else
 	echo "Input expected !!"
 	exit 1

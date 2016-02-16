@@ -61,7 +61,7 @@ fi
 #####################################################################
 echo "Flashing to board using SCP"
 sleep 1s
-bash ./sendscp_mod.sh $targetCOMPort $inputFileName
+bash ./sendscp_mod.sh $targetCOMPort buildSCP/$inputFileName
 retVal=$?
 
 if [ $retVal != 0 ]; then

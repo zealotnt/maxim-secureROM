@@ -120,7 +120,7 @@ All above, old version, just may work on first initial commit
 		copy bin file to /SLA/... example: /SLA/testRTC.bin
 		0. bash ./casignBuild.sh SLA/testRTC.bin
 		1. bash ./build_application_mod.sh buildSLA/testRTC.sbin testRTC
-		2. bash ./sendscp_mod.sh /dev/ttyUSB0 testRTC
+		2. bash ./sendscp_mod.sh /dev/ttyUSB0 buildSCP/testRTC
 
 	[2] Shorter way than [1]:
 		1. bash ./doItAll.sh SLA/testRTC.bin /dev/ttyUSB0 									--> Work on PC
