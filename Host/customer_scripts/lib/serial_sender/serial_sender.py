@@ -168,7 +168,8 @@ def parse_scpcmd_file(cmds_file, bl_scp, bl_emulation):
 			break
 
 		if result is None:
-			tries=15
+			#tries=15
+			tries=1
 			while tries:
 				
 				if _verbose:

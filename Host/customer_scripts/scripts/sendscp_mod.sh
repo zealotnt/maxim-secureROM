@@ -1,7 +1,29 @@
 #!/bin/bash
 # Import color code variables
-. ./colorCode.sh
+if [ -f colorCode.sh ]; then
+	. ./colorCode.sh
+else 
+	. /home/root/secureROM-Sirius/Host/customer_scripts/scripts/colorCode.sh
+fi
 
+
+resetMaxim()
+{
+	echo -e "${KRED}Going to enable GPIO81 of iMX6${KRESET}"
+	if [ ! -d /sys/class/gpio/gpio81 ]; then
+		echo "Export gpio81 for manually usage"
+		echo 81 > /sys/class/gpio/export
+	else
+		echo "Already exported"
+	fi
+	echo -e "${KRED}Pull the GPIO_Reset pin low${KRESET}"
+	echo low > /sys/class/gpio/gpio81/direction
+
+	echo -e "${KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second${KRESET}"
+	echo high > /sys/class/gpio/gpio81/direction
+
+	sleep 2
+}
 usage() 
 {
 	echo " Syntax: sendscp.sh <serialport> <input_dir> <Toogle>"
@@ -16,7 +38,7 @@ if [ $# != 3 ]; then
 	TOOLDIR=$(readlink -e $(dirname $0))
 else
 	#TOOLDIR=$(pwd)
-	TOOLDIR=/home/root/secureROM-Sirius/Host/customer_scripts/scripts/lib/
+	TOOLDIR=/home/root/secureROM-Sirius/Host/customer_scripts/scripts
 	echo -e "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
 fi
 
@@ -103,9 +125,12 @@ if [ $bToogleGPIO == 'y' ]; then
 	echo low > /sys/class/gpio/gpio81/direction
 fi
 
-echo "Ready to execute $(readlink -e .)"
-echo -e "${KLRED}${KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!${KRESET}"
-read reply
+if [ $bToogleGPIO != 'y' ]; then
+	echo "Ready to execute $(readlink -e .)"
+	echo -e "${KLRED}${KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!${KRESET}"
+	read reply
+fi
+
 echo "Please wait..."
 #Waiting to avoid the USB SCP time window (4s by default)
 timeSleep=2
@@ -117,8 +142,26 @@ fi
 
 sleep $timeSleep
 
+if [ $bToogleGPIO == 'y' ]; then
+	# Add retry mechanism to shell script
+	retries=3
+	while [ retries != 0 ]; do
+		$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
+		case $? in
+		0) 	echo -e "${KRED}Flash success !!!${KRESET}"
+			break
+			;;
+		*)	echo -e "${KRED}Flash fail, try again${KRESET}"
+			retries=$((retries-1))
+			resetMaxim
+			;;
+		esac
+	done
+else
+	# Normally, we don't need to retry so many times when not run with Sirius
+	$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
+fi
 
-$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 
 if [ $? -ne 0 ] ; then
 	echo "ERROR."
