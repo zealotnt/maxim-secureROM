@@ -1,0 +1,7 @@
+cd /home/zealot/Desktop/secureROM/Host/customer_scripts/scripts
+
+../lib/session_build.exe session_mode=SCP_ANGELA_ECDSA verbose=no output_file=buildSCP/testOTP/scp pp=ECDSA addr_offset=00000000 chunk_size=4094 script_file=OTPScript.txt ecdsa_file=../keys/maximtestcrk.key
+
+cd /home/zealot/Desktop/secureROM/Host/customer_scripts/scripts/buildSCP/testOTP
+
+ls -a | grep packet > packet.list

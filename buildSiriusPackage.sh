@@ -17,6 +17,9 @@ cp ../secureROM/setup.sh $currentDir/setup.sh
 mkdir Host; cd Host
 mkdir customer_scripts; cd customer_scripts
 
+# Copy all of content in support-scripts folder
+cp -rf ../../../secureROM/support-scripts $currentDir/support-scripts 
+
 # Copy all of content in keys folder
 cp -rf ../../../secureROM/Host/customer_scripts/keys $currentDir/Host/customer_scripts/keys
 

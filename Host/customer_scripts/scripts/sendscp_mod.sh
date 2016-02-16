@@ -103,7 +103,8 @@ if [ $bToogleGPIO == 'y' ]; then
 fi
 
 echo "Ready to execute $(readlink -e .)"
-read -p "${KLRED}${KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!${KRESET}" reply
+echo -e "${KLRED}${KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!${KRESET}"
+read reply
 echo "Please wait..."
 #Waiting to avoid the USB SCP time window (4s by default)
 timeSleep=2
