@@ -179,3 +179,5 @@ if [ $bToogleGPIO == 'y' ]; then
 	sleep 1
 	echo high > /sys/class/gpio/gpio81/direction
 fi
+
+exit 0

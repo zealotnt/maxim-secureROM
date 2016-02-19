@@ -3,3 +3,5 @@ Host/customer_scripts/scripts/buildSCP/*
 !Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk
 Host/customer_scripts/scripts/buildSLA
 Host/customer_scripts/CaSign
+
+*.pyc
