@@ -16,11 +16,11 @@ resetMaxim()
 	else
 		echo "Already exported"
 	fi
-	echo -e "${KRED}Pull the GPIO_Reset pin low${KRESET}"
-	echo low > /sys/class/gpio/gpio81/direction
-
-	echo -e "${KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second${KRESET}"
+	echo -e "${KRED}Pull the GPIO_Reset pin high${KRESET}"
 	echo high > /sys/class/gpio/gpio81/direction
+
+	echo -e "${KRED}Pull the GPIO_Reset pin low again, wait $timeSleep second${KRESET}"
+	echo low > /sys/class/gpio/gpio81/direction
 
 	sleep 2
 }
@@ -121,8 +121,8 @@ if [ $bToogleGPIO == 'y' ]; then
 	else
 		echo "Already exported"
 	fi
-	echo -e "${KRED}Pull the GPIO_Reset pin low${KRESET}"
-	echo low > /sys/class/gpio/gpio81/direction
+	echo -e "${KRED}Pull the GPIO_Reset pin high${KRESET}"
+	echo high > /sys/class/gpio/gpio81/direction
 fi
 
 if [ $bToogleGPIO != 'y' ]; then
@@ -136,22 +136,22 @@ echo "Please wait..."
 timeSleep=2
 
 if [ $bToogleGPIO == 'y' ]; then
-	echo -e "${KRED}Pull the GPIO_Reset pin high again, wait $timeSleep second${KRESET}"
-	echo high > /sys/class/gpio/gpio81/direction
+	echo -e "${KRED}Pull the GPIO_Reset pin low again, wait $timeSleep second${KRESET}"
+	echo low > /sys/class/gpio/gpio81/direction
 fi
 
 sleep $timeSleep
 
 if [ $bToogleGPIO == 'y' ]; then
 	# Add retry mechanism to shell script
-	retries=3
-	while [ retries != 0 ]; do
+	retries=2
+	while [ $retries -ne 0 ]; do
 		$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 		case $? in
 		0) 	echo -e "${KRED}Flash success !!!${KRESET}"
 			break
 			;;
-		*)	echo -e "${KRED}Flash fail, try again${KRESET}"
+		*)	echo -e "${KRED}Flash fail, try again, $retries times left ${KRESET}"
 			retries=$((retries-1))
 			resetMaxim
 			;;
@@ -162,7 +162,6 @@ else
 	$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 fi
 
-
 if [ $? -ne 0 ] ; then
 	echo "ERROR."
 	echo "Make sure you pressed [Enter] right after powering-up the system."
@@ -170,14 +169,18 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
+if [ $retries -eq 0 ];then
+	echo "Operation fail"
+	exit 1
+fi
 
+echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
 
 if [ $bToogleGPIO == 'y' ]; then
 	echo "Reseting Maxim"
-	echo low > /sys/class/gpio/gpio81/direction
-	sleep 1
 	echo high > /sys/class/gpio/gpio81/direction
+	sleep 1
+	echo low > /sys/class/gpio/gpio81/direction
 fi
 
 exit 0

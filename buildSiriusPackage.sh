@@ -1,5 +1,20 @@
 #!/bin/bash
 
+check_yn_question()
+{
+	while [ 1 ]; do
+		read -p "Do you want to remove that existing directory? [y/n]" bResult
+		if [ "$bResult" == "y" ]; then
+			break
+		elif [ "$bResult" == "n" ]; then
+			exit
+		else
+			echo -e "Wrong input !!"
+		fi
+	done
+}
+
+
 if [ ! -d ../secureROM-Sirius ]; then
 	echo "Creating secureROM-Sirius folder"
 	cd ..
@@ -8,8 +23,18 @@ if [ ! -d ../secureROM-Sirius ]; then
 	currentDir=$(pwd)
 	echo $currentDir
 else
-	echo "secureROM-Sirius folder Already present, please backup it before run this script !"
-	exit 1
+	echo "secureROM-Sirius folder Already present, do you want to remove it ?"
+	check_yn_question
+	if [ $bResult == "y" ]; then
+		cd ..
+		rm -rf secureROM-Sirius
+		mkdir secureROM-Sirius
+		cd secureROM-Sirius
+		currentDir=$(pwd)
+		echo $currentDir
+	else
+		exit 1	
+	fi
 fi
 
 cp ../secureROM/setup.sh $currentDir/setup.sh
@@ -42,3 +67,5 @@ cp ../../../../secureROM/Host/customer_scripts/scripts/sendscp_mod.sh .
 mkdir buildSCP
 cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk ./buildSCP/prod_p3_write_crk
 cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/testRTC ./buildSCP/testRTC
+
+echo "Done !!!"

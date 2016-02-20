@@ -130,7 +130,10 @@ All above, old version, just may work on first initial commit
 		bash ./writecrk.sh /dev/ttyUSB0 ../../../SCP_Packets/prod_p3_write_crk/ 			--> Work on PC
 
 
-		bash ./writecrk.sh /dev/ttymxc4 ../../../SCP_Packets/prod_p3_write_crk/				--> Not work
-		bash ./sendscp_mod.sh /dev/ttymxc4 ../../../../SCP_Packets/prod_p3_write_crk/ y 	--> Flash Key
-		bash ./sendscp_mod.sh /dev/ttymxc4 prod_p3_write_crk/ y 							--> Flash Key
-		bash ./sendscp_mod.sh /dev/ttymxc4 testUARTEcho/ y 									--> Flash App
+		# 3PCB change ttymxc3 to ttymxc4
+		bash ./writecrk.sh /dev/ttymxc3 ../../../SCP_Packets/prod_p3_write_crk/				--> Not work
+		bash ./sendscp_mod.sh /dev/ttymxc3 ../../../../SCP_Packets/prod_p3_write_crk/ y 	--> Flash Key
+		bash ./sendscp_mod.sh /dev/ttymxc3 buildSCP/prod_p3_write_crk/ y 					--> Flash Key
+		bash ./sendscp_mod.sh /dev/ttymxc3 buildSCP/testUARTEcho/ y 						--> Flash App
+
+		bash secureROM-Sirius/Host/customer_scripts/scripts/sendscp_mod.sh /dev/ttymxc3 secureROM-Sirius/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk/ y 				  --> Flash App with absolute path
