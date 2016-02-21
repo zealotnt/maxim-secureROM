@@ -29,9 +29,6 @@
 # trademarks, maskwork rights, or any other form of intellectual
 # property whatsoever. Maxim Integrated Products, Inc. retains all
 # ownership rights.
-echo "    Hello, this is set up tools "
-
-
 usage() {
     echo "Configures the SecureROM Package for the current host computer."
     echo
