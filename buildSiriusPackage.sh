@@ -2,8 +2,9 @@
 
 check_yn_question()
 {
+	text=$1
 	while [ 1 ]; do
-		read -p "Do you want to remove that existing directory? [y/n]" bResult
+		read -p "$text" bResult
 		if [ "$bResult" == "y" ]; then
 			break
 		elif [ "$bResult" == "n" ]; then
@@ -24,7 +25,7 @@ if [ ! -d ../secureROM-Sirius ]; then
 	echo $currentDir
 else
 	echo "secureROM-Sirius folder Already present, do you want to remove it ?"
-	check_yn_question
+	check_yn_question "Do you want to remove that existing directory? [y/n]"
 	if [ $bResult == "y" ]; then
 		cd ..
 		rm -rf secureROM-Sirius
@@ -43,7 +44,16 @@ mkdir Host; cd Host
 mkdir customer_scripts; cd customer_scripts
 
 # Copy all of content in support-scripts folder
-cp -rf ../../../secureROM/support-scripts $currentDir/support-scripts 
+check_yn_question "Do you want to copy support-scripts as well ? [y/n]"
+if [ $bResult == "y" ]; then
+	mkdir ../../support-scripts
+	tempDir=$(pwd)
+	cd -P ../../../secureROM/support-scripts/
+	cp -rp * $currentDir/support-scripts/
+	cd $tempDir
+	# cp -rf ../../../secureROM/support-scripts/* $currentDir/support-scripts 
+fi
+
 
 # Copy all of content in keys folder
 cp -rf ../../../secureROM/Host/customer_scripts/keys $currentDir/Host/customer_scripts/keys
