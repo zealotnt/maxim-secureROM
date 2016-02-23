@@ -1,4 +1,5 @@
 #!/bin/bash
+. Host/customer_scripts/scripts/colorCode.sh
 
 check_yn_question()
 {
@@ -8,7 +9,7 @@ check_yn_question()
 		if [ "$bResult" == "y" ]; then
 			break
 		elif [ "$bResult" == "n" ]; then
-			exit
+			break
 		else
 			echo -e "Wrong input !!"
 		fi
@@ -32,7 +33,6 @@ else
 		mkdir secureROM-Sirius
 		cd secureROM-Sirius
 		currentDir=$(pwd)
-		echo $currentDir
 	else
 		exit 1	
 	fi
@@ -50,7 +50,7 @@ if [ $bResult == "y" ]; then
 	tempDir=$(pwd)
 	cd -P ../../../secureROM/support-scripts/
 	cp -rp * $currentDir/support-scripts/
-	cd $tempDir
+	cd "$tempDir"
 	# cp -rf ../../../secureROM/support-scripts/* $currentDir/support-scripts 
 fi
 
@@ -77,5 +77,6 @@ cp ../../../../secureROM/Host/customer_scripts/scripts/sendscp_mod.sh .
 mkdir buildSCP
 cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk ./buildSCP/prod_p3_write_crk
 cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/testRTC ./buildSCP/testRTC
+cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/maximFw ./buildSCP/maximFw
 
-echo "Done !!!"
+echo -e "${ENDL}${KLRED}${KBOLD}Done build secureROM-Sirius!!!${KRESET}"
