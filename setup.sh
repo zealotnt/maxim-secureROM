@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2012-2014 Maxim Integrated Products, Inc., All Rights Reserved.
+# Copyright (C) 2012-2015 Maxim Integrated Products, Inc., All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -29,14 +29,15 @@
 # trademarks, maskwork rights, or any other form of intellectual
 # property whatsoever. Maxim Integrated Products, Inc. retains all
 # ownership rights.
+
 usage() {
     echo "Configures the SecureROM Package for the current host computer."
     echo
-    echo "Copyright (c)2012-2014 Maxim Integrated Products, Inc."
+    echo "Copyright (c)2012-2015 Maxim Integrated Products, Inc."
     echo
     echo "Usage: ./setup.sh [--soc=<rev>]"
     echo
-    echo "   --soc=<rev> specify the MAX32550 revision.  Default is A3."
+    echo "   --soc=<rev> specify the MAX32550 revision.  Default is B2."
     echo
     echo "NOTE: Launch this script from the root directory of the SecureROM package."
     echo
@@ -44,6 +45,7 @@ usage() {
 
 if [ $# -gt 1 ]; then
     usage >&2
+    echo "not expect arg"
     exit 2
 fi
 
@@ -55,7 +57,7 @@ if [ ! -d ./Host/customer_scripts/ ]; then
 fi
 
 homedir=$(pwd)
-soc='A3'
+soc='B2'
 
 while [ $# -ge 1 ]; do
 	case $1 in

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: UTF-8 -*-
 #
 # src/setup.py
@@ -49,30 +49,29 @@
 from distutils.core import setup
 import sys
 import serial_sender
+from cx_Freeze import setup, Executable
+import serial_sender
 
+print sys.platform
 if sys.platform == 'win32':
-    import py2exe
-    # If run without args, build executables, in quiet mode.
-    if len(sys.argv) == 1:
-        sys.argv.append("py2exe")
-        sys.argv.append("-q")
-    setup(name=serial_sender.PROG,
-          version=serial_sender.VERSION,
-          description=serial_sender.PROG,
-          author=serial_sender.AUTHOR,
-          url='http://www.maxim-ic.com',
-          download_url='http://www.maxim-ic.com',
-          console=['serial_sender.py'],
-          options={
-                    "py2exe":{
-                            "unbuffered": True,
-                            "optimize": 2,
-                            "bundle_files": 1,
-							#"includes": ["System","pdb"]
-                    }
-          },
-		  
+	
+	build_exe_options = {"build_exe":"..\\build\\","packages": ["os","errors"], "excludes": ["tkinter"]}
 
-    )
+	setup(
+    		name="serial_sender",
+    		version=serial_sender.VERSION,
+    		description="Serial Sender",
+    		options={"build_exe": build_exe_options},
+    		executables=[Executable("serial_sender.py", targetName="serial_sender.exe")],
+	)
 else:
-    print 'No setup for Linux platform'
+	build_exe_options = {"build_exe":"../build/","compressed":True,"packages": ["os","errors"], "excludes": ["tkinter"]}
+
+	setup(
+    		name="serial_sender",
+    		version=serial_sender.VERSION,
+    		description="Serial Sender",
+    		options={"build_exe": build_exe_options},
+    		executables=[Executable("serial_sender.py", targetName="serial_sender")],
+	)
+

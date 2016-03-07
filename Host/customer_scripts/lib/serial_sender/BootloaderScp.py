@@ -32,6 +32,7 @@
 #
 # Created on: Dec 16, 2009
 # Author: Grégory Romé <gregory.rome@maxim-ic.com>
+# Author: Benjamin VINOT <benjamin.vinot@maximintegrated.com>
 #
 # ---- Subversion keywords (need to set the keyword property)
 # $Rev:: 718           $:  Revision of last commit
@@ -42,16 +43,24 @@
 
 :Summary: Bootloader SCP Classes
 :Author: Grégory Romé - gregory.rome@maxim-ic.com
+:Author: Benjamin VINOT - benjamin.vinot@maximintegrated.com
 :Organization: Maxim Integrated Products
 :Copyright: Copyright © 2009, Maxim Integrated Products
 :License: BSD License - http://www.opensource.org/licenses/bsd-license.php
 """
 
 #---- IMPORTS
-import serial
-import sys, os
+
+import sys
 from struct import unpack
 from binascii import hexlify
+
+import serial
+
+
+
+
+
 
 #---- CLASSES
 
@@ -191,7 +200,7 @@ class ScpCmd():
             if len(data) != (4):
                 print >> sys.stderr, "error: expected chk size != real one"
                 print >> sys.stderr, "       real size = " + str(len(data))
-                print >> sys.stderr, "       expected size = " + 4
+                print >> sys.stderr, "       expected size = " + str(4)
                 raise Exception()
 
             #r = unpack(self.CHK_FMT, data)
@@ -234,21 +243,29 @@ class BootloaderScp(serial.Serial):
     BootloaderScp extends `Serial` by adding functions to read SCP commands.
     """
 
-    def __init__(self, port, spectimeout=35):
+    def __init__(self, port, timeout=35):
         """
         :Parameter port: serial port to use (/dev/tty* or COM*)
         """
 
-        serial.Serial.__init__(self, port=port, baudrate=115200, timeout=spectimeout, writeTimeout=1)
+        serial.Serial.__init__(self, port=port, baudrate=115200, timeout=timeout)
 
-    def readPacket(self):
+    def writePacket(self, packet):
+
+        print ScpCmd(packet)
+        self.setTimeout(1)
+
+        return self.write(packet.read())
+
+
+    def readPacket(self, quiet):
         """
         Read a full packet
         """
 
         scp_cmd = ScpCmd()
 
-        hdr = self.readHeader()
+        hdr = self.readHeader(quiet)
         if hdr is None:
             print >> sys.stderr, "error: no header"
             raise Exception()
@@ -271,7 +288,7 @@ class BootloaderScp(serial.Serial):
             scp_cmd.data_bin = data
 
             data = self.read(4)
-            if len(data) != 4:
+            if len(data) != 4 and scp_cmd.hdr.ctl != 12:
                 print >> sys.stderr, "error: expected chk size != real one"
                 print >> sys.stderr, "       real size = " + str(len(data))
                 print >> sys.stderr, "       expected size = 4"
@@ -284,7 +301,7 @@ class BootloaderScp(serial.Serial):
 
         return scp_cmd
 
-    def readHeader(self):
+    def readHeader(self, quiet):
         """
         Read the packet header
         """
@@ -293,15 +310,32 @@ class BootloaderScp(serial.Serial):
 
         data = self.read(scp_hdr.SIZE)
         if len(data) == 0:
-            print >> sys.stderr, "error: timeout, no packet received"
+            if not quiet:
+                print >> sys.stderr, "error: timeout, no packet received"
             raise Exception()
 
         if len(data) != scp_hdr.SIZE:
-            print >> sys.stderr, "error: expected hdr size != real one"
-            print >> sys.stderr, "       real size = " + str(len(data))
-            print >> sys.stderr, "       expected size = " + str(scp_hdr.SIZE)
+            if not quiet:
+                print >> sys.stderr, "error: expected hdr size != real one"
+                print >> sys.stderr, "       real size = " + str(len(data))
+                print >> sys.stderr, "       expected size = " + str(scp_hdr.SIZE)
             raise Exception()
 
         scp_hdr.parseData(data)
 
         return scp_hdr
+    def readDump(self, filename):
+        print filename
+        if filename is not None:
+                f = open(filename, 'w')
+
+        while True:
+            data = self.read(1)
+            if data == chr(4):
+                if filename is not None:
+                    f.close()
+                break
+            if filename is not None:
+                f.write(data)
+
+            sys.stdout.write(data)
