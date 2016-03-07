@@ -53,7 +53,7 @@ using namespace MXIM::HSM::nCipher;
 #define INIFILE		 ".\\session_build.ini"
 #define MAJV		3
 #define MINV		7
-#define ZVER		9
+#define ZVER		14
 #define BUILD		1
 
 
@@ -71,8 +71,12 @@ using namespace MXIM::HSM::nCipher;
 #define MAXLINE	35000
 #define MAX_TAB	100
 #define MAX_FLASH_MB 1023
-#define MAX_CHUNK_SIZE (15*1024)
-#define MAXQ1852_CHUNK_SIZE 32
+//15354 to be aligned
+#define ANGELA_MAX_CHUNK_SIZE 15354
+#define MAX_CHUNK_SIZE ANGELA_MAX_CHUNK_SIZE
+#define MAXQ1852_MAX_CHUNK_SIZE 1856
+//4094 to be aligned
+#define FLORA_MAX_CHUNK_SIZE 4094
 #define ERROR	1
 #define OK	0
 #define YES	1
@@ -208,8 +212,12 @@ u8 mrk_signature[RSA_MODULUS_LEN];
 
 u8 crk_ecdsa_x[ECDSA_MODULUS_LEN];
 u8 crk_ecdsa_y[ECDSA_MODULUS_LEN];
+u8 crk_ecdsa_x2[ECDSA_MODULUS_LEN];
+u8 crk_ecdsa_y2[ECDSA_MODULUS_LEN];
 u8 mrk_ecdsa_r[ECDSA_MODULUS_LEN];
 u8 mrk_ecdsa_s[ECDSA_MODULUS_LEN];
+u8 mrk_ecdsa_r2[ECDSA_MODULUS_LEN];
+u8 mrk_ecdsa_s2[ECDSA_MODULUS_LEN];
 //max_data_size is used to control read data are not too large vs *data allocated size
 int max_data_size;
 u32 init_buffer[2048];

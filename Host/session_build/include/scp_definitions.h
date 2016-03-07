@@ -310,6 +310,8 @@
 #define HEX_LINE_LEN_POS2		2
 #define HEX_ADDRESS_START		3
 #define HEX_ADDRESS_END			6
+#define HEX_EXTENDED_LINEAR_ADDRESS_START		9
+#define HEX_EXTENDED_LINEAR_ADDRESS_END			10
 #define HEX_DATA_START			9
 
 //----------------------------------------------------------------------------------------------//

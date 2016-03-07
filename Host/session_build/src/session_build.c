@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// Copyright (c) 2009-2013, Maxim Integrated Products
+// Copyright (c) 2009-2015, Maxim Integrated Products
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -170,6 +170,17 @@ extern "C"
 //3771 MAXQ1852 load-file improved
 //3781 #3747: rewrite-crk added for angela and lhassa
 //3791 #3780: vbus detect support
+//3.7.10.1 printf(hello) removed in ecdsa_sign
+//3.7.11: #3946: rewrite-crk including previous crk information					 
+//3.7.12.0: DR 31032015 1704 UCL DYNAMIC LOAD CONFLICT IN CASE OF MAX32590
+
+//3.7.13: #4041 max packet size shall be default value, 
+//        #4023 missing file shall stop execution
+//        #4287 correction made in 2.3.7.1 for write-file applied to verify-file
+//3.7.14: #4186 blank lines support in .ini
+//        #4288 extended-address management was wrong for maxq1852
+//        #4306 parameter name string in parameter value
+
 #define UNUSED_PARAMETER(x) (void)(x)   // optimized away by compiler
 
 int test_hex(char c1,char c2)
@@ -375,23 +386,23 @@ void define_scp_cmd(void)
   strcpy(idf_scp_cmd[COMMAND_MAXQ1852_ACTIVATE_CUSTOMER_KEY],"activate-customer-key");
   strcpy(idf_scp_cmd[COMMAND_MAXQ1852_GENERATE_APPLICATION_STARTUP_SIGNATURE],"generate-application-startup-signature");
   strcpy(idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_APPLICATION_STARTUP_SIGNATURE],"verify-application-startup-signature");
-  mode[COMMAND_HELP]=SCP_RSA+SCP_FLORA_RSA;
-  mode[COMMAND_WRITE_FILE]=SCP_RSA+SCP_FLORA_RSA;
-  mode[COMMAND_WRITE_ONLY]=SCP_RSA+SCP_FLORA_RSA;
-  mode[COMMAND_ERASE_DATA]=SCP_RSA+SCP_FLORA_RSA;
-  mode[COMMAND_VERIFY_FILE]=SCP_RSA+SCP_FLORA_RSA;
-  mode[COMMAND_WRITE_BLPK]=SCP_RSA;
-  mode[COMMAND_WRITE_FAK]=SCP_RSA;
-  mode[COMMAND_READ_CONFIGURATION]=SCP_RSA;
-  mode[COMMAND_WRITE_CONFIGURATION]=SCP_RSA;
-  mode[COMMAND_READ_MEMORY_MAPPING]=SCP_RSA;
-  mode[COMMAND_WRITE_CRK]=SCP_FLORA_RSA;
-  mode[COMMAND_REWRITE_CRK]=SCP_FLORA_RSA;
+  mode[COMMAND_HELP]=SCP_ANGELA_ECDSA*100+SCP_RSA*10+SCP_FLORA_RSA;
+  mode[COMMAND_WRITE_FILE]=SCP_ANGELA_ECDSA*100+SCP_RSA*10+SCP_FLORA_RSA;
+  mode[COMMAND_WRITE_ONLY]=SCP_ANGELA_ECDSA*100+SCP_RSA*10+SCP_FLORA_RSA;
+  mode[COMMAND_ERASE_DATA]=SCP_ANGELA_ECDSA*100+SCP_RSA*10+SCP_FLORA_RSA;
+  mode[COMMAND_VERIFY_FILE]=SCP_ANGELA_ECDSA*100+SCP_RSA*10+SCP_FLORA_RSA;
+  mode[COMMAND_WRITE_BLPK]=SCP_RSA*10;
+  mode[COMMAND_WRITE_FAK]=SCP_RSA*10;
+  mode[COMMAND_READ_CONFIGURATION]=SCP_RSA*10;
+  mode[COMMAND_WRITE_CONFIGURATION]=SCP_RSA*10;
+  mode[COMMAND_READ_MEMORY_MAPPING]=SCP_RSA*10;
+  mode[COMMAND_WRITE_CRK]=SCP_ANGELA_ECDSA*100+SCP_FLORA_RSA;
+  mode[COMMAND_REWRITE_CRK]=SCP_ANGELA_ECDSA*100+SCP_FLORA_RSA;
   mode[COMMAND_WRITE_BPK]=SCP_FLORA_RSA;
-  mode[COMMAND_WRITE_OTP]=SCP_FLORA_RSA;
-  mode[COMMAND_WRITE_TIMEOUT]=SCP_FLORA_RSA;
-  mode[COMMAND_KILL_CHIP]=SCP_FLORA_RSA;
-  mode[COMMAND_EXECUTE_CODE]=SCP_FLORA_RSA;
+  mode[COMMAND_WRITE_OTP]=SCP_ANGELA_ECDSA*100+SCP_FLORA_RSA;
+  mode[COMMAND_WRITE_TIMEOUT]=SCP_ANGELA_ECDSA*100+SCP_FLORA_RSA;
+  mode[COMMAND_KILL_CHIP]=SCP_ANGELA_ECDSA*100+SCP_FLORA_RSA;
+  mode[COMMAND_EXECUTE_CODE]=SCP_ANGELA_ECDSA*100+SCP_FLORA_RSA;
   mode[COMMAND_MAXQ1852_LOAD_CUSTOMER_KEY]=MSP_MAXQ1852_ECDSA;
   mode[COMMAND_MAXQ1852_VERIFY_CUSTOMER_KEY]=MSP_MAXQ1852_ECDSA;
   mode[COMMAND_MAXQ1852_ACTIVATE_CUSTOMER_KEY]=MSP_MAXQ1852_ECDSA;
@@ -541,13 +552,14 @@ int ecdsa_sign_payload(void)
 #ifdef _MXIM_HSM
 
   resu=MXIMHSMSHA256ECDSASign(	&g_objMXHSMCLI,
-				(PUCHAR)input,
-				(PULONG)&inputsize,
-				&l_ulAttributeKeyType,
-				(PUCHAR)g_tcHSMECDSALabelKey,
-				&l_ulHSMLabelKeyLength,
-				(PUCHAR)signature, 
-				(PULONG)&l_iSignatureLength);
+								&g_objMXIMUCLLibrary,
+								(PUCHAR)input,
+								(PULONG)&inputsize,
+								&l_ulAttributeKeyType,
+								(PUCHAR)g_tcHSMECDSALabelKey,
+								&l_ulHSMLabelKeyLength,
+								(PUCHAR)signature, 
+								(PULONG)&l_iSignatureLength);
   if(resu!=UCL_OK)
     {
       printf("ERROR on ECDSA sha256 sign (%d)\n",resu);
@@ -577,13 +589,14 @@ int ecdsa_sign_payload(void)
 #ifdef _MXIM_HSM
   
   resu = MXIMHSMSHA256ECDSAVerify(	&g_objMXHSMCLI,
-					(PUCHAR)input,
-					(PULONG)&inputsize,
-					&l_ulAttributeKeyType,
-					(PUCHAR)g_tcHSMECDSALabelKey,
-					&l_ulHSMLabelKeyLength,
-					(PUCHAR)signature, 
-					(ULONG)l_iSignatureLength);
+									&g_objMXIMUCLLibrary,
+									(PUCHAR)input,
+									(PULONG)&inputsize,
+									&l_ulAttributeKeyType,
+									(PUCHAR)g_tcHSMECDSALabelKey,
+									&l_ulHSMLabelKeyLength,
+									(PUCHAR)signature, 
+									(ULONG)l_iSignatureLength);
   if(resu!=UCL_OK)
     {
       printf("ERROR on ECDSA sha256 verify (%d)\n",resu);
@@ -811,28 +824,30 @@ int extension(char *ext,char *name)
     return(EXIT_FAILURE);
 }
 
+//HEX file processing
+//HEX format reference is http://en.wikipedia.org/wiki/Intel_HEX
 int read_hex(char *hexfilename)
 {
-  FILE *fp;
+  FILE *fpread;
   char line[MAXLINE];
   int nb_bytes;
   int i;
   int line_length;
   int line_addr;
-  fp=fopen(hexfilename,"r");
-  if(fp==NULL)
+  fpread=fopen(hexfilename,"r");
+  if(fpread==NULL)
     {
       printf("ERROR: <%s> not found\n",hexfilename);
       return(EXIT_FAILURE);
     }
   nb_bytes=0;
   data_len=0;
-  hex_extended_address=-1;
-  while(fscanf(fp,"%s",line)!=EOF)
+  hex_extended_address=0;
+  while(fscanf(fpread,"%s",line)!=EOF)
     {
       if(MAXLINE<strlen(line))
 	{
-	  printf("ERROR: line too long: %d chars, while limited to %d\n",strlen(line),MAXLINE);
+	  printf("ERROR: line too long: %d chars, while limited to %d\n",(int)strlen(line),MAXLINE);
 	  return(EXIT_FAILURE);
 	}
       if(line[0]==HEX_START_CHAR)
@@ -862,8 +877,8 @@ int read_hex(char *hexfilename)
 	      //read and store data bytes
 	      //i is the position in the line, so expressed in char
 	      if(TRUE==verbose)
-		printf("\n@=%04x ",line_addr);
-	      for(addr[data_len]=line_addr,i=0;i<line_length;i+=2,data_len++)
+		printf("\n@=%04x-%04x (%08x) ",hex_extended_address,line_addr,(hex_extended_address<<16)^line_addr);
+	      for(addr[data_len]=(hex_extended_address<<16)^line_addr,i=0;i<line_length;i+=2,data_len++)
 		{
 		  if(EXIT_SUCCESS==test_hex(line[HEX_DATA_START+i],line[HEX_DATA_START+i+1]))
 		    {
@@ -896,31 +911,40 @@ int read_hex(char *hexfilename)
 		}
 	    }
 	  else
-	    //this is an extended address line
+	    //if this is an extended address line: '04'
 	    if('0'==line[HEX_RECORD_TYPE_POS1] && '4'==line[HEX_RECORD_TYPE_POS2])
 	      {
 		// *2 as a byte length and not a char length
 		if(EXIT_SUCCESS==test_hex(line[HEX_LINE_LEN_POS1],line[HEX_LINE_LEN_POS2]))
-		  line_length=hex(line[HEX_LINE_LEN_POS1],line[HEX_LINE_LEN_POS2])*2;
+		  {
+		    line_length=hex(line[HEX_LINE_LEN_POS1],line[HEX_LINE_LEN_POS2])*2;
+		    //line length shall be 4 (2*2 chars)
+		    if(4!=line_length)
+		      {
+			printf("ERROR: extended linear address line with a length different from 2 (%d bytes)\n",line_length);
+			return(EXIT_FAILURE);
+		      }
+		  }
 		else
 		  {
 		    printf("ERROR: non hexa char detected in #%d <%c%c>\n",HEX_LINE_LEN_POS1,line[HEX_LINE_LEN_POS1],line[HEX_LINE_LEN_POS2]);
 		    return(EXIT_FAILURE);
-		    //		    printf("line length (hex-digits)=%d\n",line_length);
 		  }
 		//retrieve the extended address from the data
 		//i is the position in the line, so expressed in char
 		for(hex_extended_address=0,i=0;i<line_length;i+=2)
 		  {
-		    if(EXIT_SUCCESS==test_hex(line[HEX_ADDRESS_START+i],line[HEX_ADDRESS_START+i+1]))
-		      hex_extended_address=(hex_extended_address<<8)^(hex(line[HEX_ADDRESS_START+i],line[HEX_ADDRESS_START+i+1]));
+		    if(EXIT_SUCCESS==test_hex(line[HEX_EXTENDED_LINEAR_ADDRESS_START+i],line[HEX_EXTENDED_LINEAR_ADDRESS_START+i+1]))
+		      {
+			hex_extended_address=(hex_extended_address<<8)^(hex(line[HEX_EXTENDED_LINEAR_ADDRESS_START+i],line[HEX_EXTENDED_LINEAR_ADDRESS_START+i+1]));
+		      }
 		    else
 		      {
-			printf("ERROR: non hexa char detected in #%d <%c%c>\n",HEX_ADDRESS_START+i,line[HEX_ADDRESS_START+i],line[HEX_ADDRESS_START+i+1]);
+			printf("ERROR: non hexa char detected in #%d <%c%c>\n",HEX_EXTENDED_LINEAR_ADDRESS_START+i,line[HEX_EXTENDED_LINEAR_ADDRESS_START+i],line[HEX_EXTENDED_LINEAR_ADDRESS_START+i+1]);
 			return(EXIT_FAILURE);
 		      }
 		  }
-		printf("extended-address=%08x\n",hex_extended_address);
+		printf("\nextended-address=%08x\n",hex_extended_address);
 	      }
 	}
       else
@@ -929,40 +953,40 @@ int read_hex(char *hexfilename)
 	  return(EXIT_FAILURE);
 	}
     }
+  printf("\n");
   if(-1==hex_extended_address)
     {
-      printf("ERROR: extended address not initialized\n");
+      printf("WARNING: extended address not initialized, so set to NULL\n");
       hex_extended_address=0;
-      return(EXIT_FAILURE);
     }
+  (void)fclose(fpread);
   fprintf(fp,"%d==%d bytes\n",data_len,nb_bytes);
   fprintf(fp,"nb of write-mem packets: %.0f\n",1.0*data_len/(chunk_size));
-  (void)fclose(fp);
   return(EXIT_SUCCESS);
 }
 
 int read_s19(char *s19filename,char *ptr_address_offset)
 {
-  FILE *fp;
+  FILE *fpread;
   char line[MAXLINE];
   int nb_bytes;
   int i;
   int line_length;
   int line_addr;
   UNUSED_PARAMETER(ptr_address_offset);
-  fp=fopen(s19filename,"r");
-  if(fp==NULL)
+  fpread=fopen(s19filename,"r");
+  if(fpread==NULL)
     {
       printf("ERROR: <%s> not found\n",s19filename);
       return(EXIT_FAILURE);
     }
   nb_bytes=0;
   data_len=0;
-  while(fscanf(fp,"%s",line)!=EOF)
+  while(fscanf(fpread,"%s",line)!=EOF)
     {
       if(MAXLINE<strlen(line))
 	{
-	  printf("ERROR: line too long: %d chars, while limited to %d\n",strlen(line),MAXLINE);
+	  printf("ERROR: line too long: %d chars, while limited to %d\n",(int)strlen(line),MAXLINE);
 	  return(EXIT_FAILURE);
 	}
       if(line[0]==S19_WDATA_CHAR1 && line[1]==S19_WDATA_CHAR2)
@@ -1029,34 +1053,34 @@ int read_s19(char *s19filename,char *ptr_address_offset)
 	  printf("nb of write-mem packets: %.0f\n",1.0*data_len/(chunk_size));
 	}
   }
+  (void)fclose(fpread);
   fprintf(fp,"%d==%d bytes\n",data_len,nb_bytes);
   fprintf(fp,"nb of write-mem packets: %.0f\n",1.0*data_len/(chunk_size));
-  (void)fclose(fp);
   return(EXIT_SUCCESS);
 }
 
 int read_s20(char *s20filename,char *ptr_start_address)
 {
-  FILE *fp;
+  FILE *fpread;
   char line[MAXLINE];
   int nb_bytes;
   int i;
   int line_length;
   int line_addr;
   UNUSED_PARAMETER(ptr_start_address);
-  fp=fopen(s20filename,"r");
-  if(fp==NULL)
+  fpread=fopen(s20filename,"r");
+  if(fpread==NULL)
     {
       printf("ERROR: <%s> not found\n",s20filename);
       return(EXIT_FAILURE);
     }
   nb_bytes=0;
   data_len=0;
-  while(fscanf(fp,"%s",line)!=EOF)
+  while(fscanf(fpread,"%s",line)!=EOF)
     {
       if(MAXLINE<strlen(line))
 	{
-	  printf("ERROR: line too long: %d chars, while limited to %d\n",strlen(line),MAXLINE);
+	  printf("ERROR: line too long: %d chars, while limited to %d\n",(int)strlen(line),MAXLINE);
 	  return(EXIT_FAILURE);
 	}
       if(line[0]==S20_WDATA_CHAR1 && line[1]==S20_WDATA_CHAR2)
@@ -1125,9 +1149,9 @@ int read_s20(char *s20filename,char *ptr_start_address)
 	  printf("nb of write-mem packets: %.0f\n",1.0*data_len/(chunk_size));
 	}
   }
+  (void)fclose(fpread);
   fprintf(fp,"%d==%d bytes\n",data_len,nb_bytes);
   fprintf(fp,"nb of write-mem packets: %.0f\n",1.0*data_len/(chunk_size));
-  (void)fclose(fp);
   return(EXIT_SUCCESS);
 }
 
@@ -1560,11 +1584,12 @@ int challenge_payload(void)
   if(SBL==session_mode)
     {
 #ifdef _MXIM_HSM
-		resu=g_objMXIMUCLLibrary.AESECB(response,random_number,16,keya,16,UCL_CIPHER_ENCRYPT);
+      resu=g_objMXIMUCLLibrary.AESECB(response,random_number,16,keya,16,UCL_CIPHER_ENCRYPT);
 #else
-		resu=ucl_aes_ecb(response,random_number,16,keya,16,UCL_CIPHER_ENCRYPT);
+      resu=ucl_aes_ecb(response,random_number,16,keya,16,UCL_CIPHER_ENCRYPT);
 #endif
-
+      if(UCL_OK!=resu)
+	return(EXIT_FAILURE);
       for(i=0;i<UCL_AES_BLOCKSIZE;i++)
 	payload[ipayload++]=response[i];
     }
@@ -1593,7 +1618,8 @@ int challenge_payload(void)
 #else
 	resu=ucl_aes_ecb(response,random_number,16,keya,16,UCL_CIPHER_ENCRYPT);
 #endif
-
+      if(UCL_OK!=resu)
+	return(EXIT_FAILURE);
 	if(TRUE==verbose)
 	  {
 	    printf("response:");
@@ -1837,6 +1863,7 @@ int rsa_sign_payload(void)
       unsigned long l_ulHSMLabelKeyLength = strlen(g_tcHSMRSALabelKey);
       
       err=MXIMHSMSHA256Sign(	&g_objMXHSMCLI,
+								&g_objMXIMUCLLibrary,
 								(PUCHAR)input,
 								(PULONG)&inputsize,
 								&l_ulAttributeKeyType,
@@ -1886,15 +1913,16 @@ int rsa_sign_payload(void)
 		unsigned long l_ulHSMLabelKeyLength = strlen(g_tcHSMRSALabelKey);
 
 
-		err=MXIMHSMSHA256Sign(&g_objMXHSMCLI,
-						(PUCHAR)input,
-						(PULONG)&inputsize,
-						&l_ulAttributeKeyType,
-						(PUCHAR)g_tcHSMRSALabelKey,
-						&l_ulHSMLabelKeyLength,
-						CKM_RSA_X_509,
-						(PUCHAR)signature, 
-						(PULONG)&l_iSignatureLength);
+		err=MXIMHSMSHA256Sign(	&g_objMXHSMCLI,
+								&g_objMXIMUCLLibrary,
+								(PUCHAR)input,
+								(PULONG)&inputsize,
+								&l_ulAttributeKeyType,
+								(PUCHAR)g_tcHSMRSALabelKey,
+								&l_ulHSMLabelKeyLength,
+								CKM_RSA_X_509,
+								(PUCHAR)signature, 
+								(PULONG)&l_iSignatureLength);
 
 
 		if(err!=UCL_OK)
@@ -2443,7 +2471,7 @@ int get_start_addr_and_length_s19(char *s19filename)
     {
       if(MAXLINE<strlen(line))
 	{
-	  printf("ERROR: line too long: %d chars, while limited to %d\n",strlen(line),MAXLINE);
+	  printf("ERROR: line too long: %d chars, while limited to %d\n",(int)strlen(line),MAXLINE);
 	  return(EXIT_FAILURE);
 	}
       if(line[0]==S19_WDATA_CHAR1 && line[1]==S19_WDATA_CHAR2)
@@ -2495,7 +2523,7 @@ int get_start_addr_and_length_s20(char *s20filename)
     {
       if(MAXLINE<strlen(line))
 	{
-	  printf("ERROR: line too long: %d chars, while limited to %d\n",strlen(line),MAXLINE);
+	  printf("ERROR: line too long: %d chars, while limited to %d\n",(int)strlen(line),MAXLINE);
 	  return(EXIT_FAILURE);
 	}
       if(line[0]==S20_WDATA_CHAR1 && line[1]==S20_WDATA_CHAR2)
@@ -3028,7 +3056,7 @@ int write_bpk(char *offset_char,char *data_char)
     }
   if(strlen(offset_char)!=4)
     {
-      printf("ERROR: offset is not 2-byte long (%d)\n",strlen(offset_char));
+      printf("ERROR: offset is not 2-byte long (%d)\n",(int)strlen(offset_char));
       return(EXIT_FAILURE);
     }
   ipayload=0;
@@ -3121,7 +3149,7 @@ int execute_code(char *address)
     }
   if(strlen(address)!=8)
     {
-      printf("ERROR: address is not 4-byte long (%d)\n",strlen(address));
+      printf("ERROR: address is not 4-byte long (%d)\n",(int)strlen(address));
       return(EXIT_FAILURE);
     }
   ipayload=0;
@@ -3219,7 +3247,7 @@ int write_otp(char *offset_char,char *data_char)
     }
   if(strlen(offset_char)!=4)
     {
-      printf("ERROR: offset <%s> is not 2-byte long (%d)\n",offset_char, strlen(offset_char));
+      printf("ERROR: offset <%s> is not 2-byte long (%d)\n",offset_char, (int)strlen(offset_char));
       return(EXIT_FAILURE);
     }
   ipayload=0;
@@ -3369,7 +3397,7 @@ int read_file_signed_rsa_publickey(u8 *puk,int size,u8 *pukexp,int expsize,u8 *s
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3390,7 +3418,7 @@ int read_file_signed_rsa_publickey(u8 *puk,int size,u8 *pukexp,int expsize,u8 *s
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3411,7 +3439,7 @@ int read_file_signed_rsa_publickey(u8 *puk,int size,u8 *pukexp,int expsize,u8 *s
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3474,7 +3502,7 @@ int read_file_signed_ecdsa_publickey(u8 *x,u8 *y,u8 *r,u8 *s,int size,char *file
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3495,7 +3523,7 @@ int read_file_signed_ecdsa_publickey(u8 *x,u8 *y,u8 *r,u8 *s,int size,char *file
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3516,7 +3544,7 @@ int read_file_signed_ecdsa_publickey(u8 *x,u8 *y,u8 *r,u8 *s,int size,char *file
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3537,7 +3565,7 @@ int read_file_signed_ecdsa_publickey(u8 *x,u8 *y,u8 *r,u8 *s,int size,char *file
 #endif//_MXIM_HSM
       if(resu!=1)
 	{
-	  printf("ERROR: unexpected size (%d-%d)\n",size, strlen(line)-1);
+	  printf("ERROR: unexpected size (%d-%d)\n",size, (int)strlen(line)-1);
 	  return(EXIT_FAILURE);
 	}
 #ifndef _MXIM_HSM
@@ -3652,44 +3680,55 @@ int write_crk_payload_ecdsa(u8 *x,u8 *y,u8 *r,u8 *s,int ecdsa_len)
   return(EXIT_SUCCESS);
 }
 
-int rewrite_crk_payload_ecdsa(u8 *x,u8 *y,u8 *r,u8 *s,int ecdsa_len)
+int rewrite_crk_payload_ecdsa(u8 *oldx,u8 *oldy,u8 *newx,u8 *newy,u8 *newr,u8 *news,int ecdsa_len)
 {
   int i;
   payload[ipayload++]=(DATA<<4)^config_struct.pp;
   payload[ipayload++]=tr_id;
   //the tr-id is incremented after the payload
   //  tr_id=(tr_id+1)%256;
-  //command length: 2 bytes for command , 2 bytes for data len, 256 bytes for crk modulus, 4 bytes for pubexp, 256 bytes for mrk signature
+  //command length: 2 bytes for command , 2 bytes for data len, 64 bytes for old crk, 64 bytes for new crk, 64 bytes for new crk signature
   //data value is a hexa string so, its data len is string len/2
-  payload[ipayload++]=(2+2+ecdsa_len*4)>>8;
-  payload[ipayload++]=(2+2+ecdsa_len*4)&255;
+  payload[ipayload++]=(2+2+2*ecdsa_len+2*ecdsa_len+2*ecdsa_len)>>8;
+  payload[ipayload++]=(2+2+2*ecdsa_len+2*ecdsa_len+2*ecdsa_len)&255;
   payload[ipayload++]=REWRITE_CRK>>8;
   payload[ipayload++]=REWRITE_CRK&255;
-  payload[ipayload++]=(ecdsa_len*4)>>8;
-  payload[ipayload++]=(ecdsa_len*4)&255;
+  payload[ipayload++]=(2*ecdsa_len+2*ecdsa_len+2*ecdsa_len)>>8;
+  payload[ipayload++]=(2*ecdsa_len+2*ecdsa_len+2*ecdsa_len)&255;
   for(i=0;i<ecdsa_len;i++)
-    payload[ipayload++]=x[i];
+    payload[ipayload++]=oldx[i];
   for(i=0;i<ecdsa_len;i++)
-    payload[ipayload++]=y[i];
+    payload[ipayload++]=oldy[i];
   for(i=0;i<ecdsa_len;i++)
-    payload[ipayload++]=r[i];
+    payload[ipayload++]=newx[i];
   for(i=0;i<ecdsa_len;i++)
-    payload[ipayload++]=s[i];
+    payload[ipayload++]=newy[i];
+  for(i=0;i<ecdsa_len;i++)
+    payload[ipayload++]=newr[i];
+  for(i=0;i<ecdsa_len;i++)
+    payload[ipayload++]=news[i];
   if(TRUE==verbose)
     {
-      printf("CRK public key\n");
+      printf("old CRK public key\n");
       for(i=0;i<ecdsa_len;i++)
-	printf("%02x",x[i]);
+	printf("%02x",oldx[i]);
       printf("\n");
       for(i=0;i<ecdsa_len;i++)
-	printf("%02x",y[i]);
+	printf("%02x",oldy[i]);
+      printf("\n");
+      printf("new CRK public key\n");
+      for(i=0;i<ecdsa_len;i++)
+	printf("%02x",newx[i]);
+      printf("\n");
+      for(i=0;i<ecdsa_len;i++)
+	printf("%02x",newy[i]);
       printf("\n");
       printf("MRK signature\n");
       for(i=0;i<ecdsa_len;i++)
-	printf("%02x",r[i]);
+	printf("%02x",newr[i]);
       printf("\n");
       for(i=0;i<ecdsa_len;i++)
-	printf("%02x",s[i]);
+	printf("%02x",news[i]);
       printf("\n");
     }
   return(EXIT_SUCCESS);
@@ -3766,7 +3805,7 @@ int write_crk(char *signaturefile)
   return(EXIT_SUCCESS);
 }
 
-int rewrite_crk(char *signaturefile)
+int rewrite_crk(char *oldsignaturefile,char *newsignaturefile)
 {
   int ecdsa_len=ECDSA_MODULUS_LEN;
   int err;
@@ -3776,7 +3815,10 @@ int rewrite_crk(char *signaturefile)
       return(EXIT_FAILURE);
     }
   if(SCP_ANGELA_ECDSA==session_mode)
-    err=read_file_signed_ecdsa_publickey(crk_ecdsa_x,crk_ecdsa_y,mrk_ecdsa_r,mrk_ecdsa_s,ecdsa_len,signaturefile);
+    {
+      err=read_file_signed_ecdsa_publickey(crk_ecdsa_x,crk_ecdsa_y,mrk_ecdsa_r,mrk_ecdsa_s,ecdsa_len,oldsignaturefile);
+      err=read_file_signed_ecdsa_publickey(crk_ecdsa_x2,crk_ecdsa_y2,mrk_ecdsa_r2,mrk_ecdsa_s2,ecdsa_len,newsignaturefile);
+    }
   if(EXIT_SUCCESS!=err)
     {
       printf("ERROR in read_file_signature\n");
@@ -3786,7 +3828,7 @@ int rewrite_crk(char *signaturefile)
   seq++;
   if(SCP_ANGELA_ECDSA==session_mode)
     {
-      rewrite_crk_payload_ecdsa(crk_ecdsa_x,crk_ecdsa_y,mrk_ecdsa_r,mrk_ecdsa_s,ecdsa_len);
+      rewrite_crk_payload_ecdsa(crk_ecdsa_x,crk_ecdsa_y,crk_ecdsa_x2,crk_ecdsa_y2,mrk_ecdsa_r2,mrk_ecdsa_s2,ecdsa_len);
     }
   if(SCP_ANGELA_ECDSA==session_mode)
     {
@@ -3984,10 +4026,16 @@ int write_file(char *sfilename,char *ptr_address_offset)
   host();
   ack();
   if(EXIT_SUCCESS==extension(".s19",sfilename))
-    read_s19(sfilename,ptr_address_offset);
+    {
+      if(EXIT_SUCCESS!=read_s19(sfilename,ptr_address_offset))
+	return(EXIT_FAILURE);
+    }
   else
   if(EXIT_SUCCESS==extension(".s20",sfilename))
-    read_s20(sfilename,ptr_address_offset);
+    {
+      if(EXIT_SUCCESS!=read_s20(sfilename,ptr_address_offset))
+	return(EXIT_FAILURE);
+    }
   else
     {
       printf("ERROR: <%s> file extension not supported (only .s19 and .s20)\n",sfilename);
@@ -4033,11 +4081,8 @@ int write_file(char *sfilename,char *ptr_address_offset)
 	    printf("last chunk (%d bytes):",chunk_len);
 	  //2.3.6 (#2252): not filled up with FF anymore
 	  //	  new_chunk_len=((chunk_len/16)+1)*16;
-	  //2.3.6 (#2252): not filled up with FF anymore
 	  //for(j=chunk_len;j<new_chunk_len;j++)
-	  //2.3.6 (#2252): not filled up with FF anymore
 	  //chunk[j]=0xFF;
-	  //2.3.6 (#2252): not filled up with FF anymore
 	  //chunk_len=new_chunk_len;
 	  if(TRUE==verbose)
 	    printf("last chunk (%d bytes):",chunk_len);
@@ -4085,10 +4130,16 @@ int write_only(char *sfilename,char *ptr_address_offset)
   //  host();
   //  ack();
   if(EXIT_SUCCESS==extension(".s19",sfilename))
-    read_s19(sfilename,ptr_address_offset);
+    {
+      if(EXIT_SUCCESS!=read_s19(sfilename,ptr_address_offset))
+	return(EXIT_FAILURE);
+    }
   else
   if(EXIT_SUCCESS==extension(".s20",sfilename))
-    read_s20(sfilename,ptr_address_offset);
+    {
+      if(EXIT_SUCCESS!=read_s20(sfilename,ptr_address_offset))
+	return(EXIT_FAILURE);
+    }
   else
     {
       printf("ERROR: <%s> file extension not supported (only .s19 and .s20)\n",sfilename);
@@ -4244,19 +4295,36 @@ int verify_file(char *sfilename,char *ptr_address_offset)
   int i;
   u8 chunk[MAX_CHUNK_SIZE];
   int chunk_len;
+  //this variable is used to have a whole packet with a length of chunk_size
+  //meaning the data-only payload shall be reduced in order to have the whole packet length=chunk_size
+  //i.e. header+command+data+signature+crc=chunk_size
+  int new_chunk_size;
   int chunk_addr;
   if(EXIT_SUCCESS==extension(".s19",sfilename))
-    read_s19(sfilename,ptr_address_offset);
+    {
+      if(EXIT_SUCCESS!=read_s19(sfilename,ptr_address_offset))
+	return(EXIT_FAILURE);
+    }
   else
-      if(EXIT_SUCCESS==extension(".s20",sfilename))
-    read_s20(sfilename,ptr_address_offset);
+    if(EXIT_SUCCESS==extension(".s20",sfilename))
+      {
+	if(EXIT_SUCCESS!=read_s20(sfilename,ptr_address_offset))
+	  return(EXIT_FAILURE);
+      }
   else
     {
       printf("ERROR: <%s> file extension not supported (only .s19 and .s20)\n",sfilename);
       return(EXIT_FAILURE);
     }
+  //10 is the write-data command len: 2 bytes for the command, 4 bytes for the data length, 4 bytes for the data address
+  new_chunk_size=chunk_size-HEADER_LEN-CRC_LEN-COMMAND_LEN-10;
+  //if the mode is RSA mode, the signature len shall also be taken into account
+  if(SCP_FLORA_RSA==session_mode)
+    new_chunk_size-=SIGNATURE_LEN;
+  if(TRUE==verbose)
+    printf("%d new chunk_size=%d\n",chunk_size,new_chunk_size);
 
-chunk_len=0;
+  chunk_len=0;
   i=0;
   //parse data
   //grouping them by contiguous addresses, up to CHUNK-SIZE
@@ -4271,7 +4339,9 @@ chunk_len=0;
       chunk_addr=addr[i];
       chunk_len++;
       i++;
-      while((addr[i]==addr[i-1]+1)&&(chunk_len<chunk_size)&&(i<data_len))
+      //while consecutive addresses and not too big chunk
+      //take into account the new_chunk_size
+      while((addr[i]==addr[i-1]+1)&&(chunk_len<new_chunk_size)&&(i<data_len))
 	{
 	  chunk[chunk_len]=data[i];
 	  chunk_len++;
@@ -4310,15 +4380,17 @@ int help(void)
   for(i=0;i<MAX_SCP_COMMAND;i++)
     {
       printf("%s",idf_scp_cmd[i]);
-      if(mode[i]==MSP_MAXQ1852_ECDSA)
-	printf("MSP_MAXQ1852_ECDSA\n");
+      if((mode[i]%10)==MSP_MAXQ1852_ECDSA)
+	printf("\tMSP_MAXQ1852_ECDSA\n");
       else
-	if((mode[i]&3)==SCP_RSA)
-	  printf("\tSCP");
+	if(((mode[i]%100)/10)==SCP_RSA)
+	  printf("\tSCP-RSA");
 	else
 	  printf("\t");
-      if((mode[i]&4)==SCP_FLORA_RSA)
+      if((mode[i]%10)==SCP_FLORA_RSA)
 	printf("\tSCP-FLORA");
+      if((mode[i]/100)==SCP_ANGELA_ECDSA)
+	printf("\tSCP-ECDSA");
       printf("\n");
     }
   return(EXIT_SUCCESS);
@@ -4934,13 +5006,11 @@ int load_file(char *hexfilename)
   int last_index;
   u8 *dataloc;
   char schunk_addr[10];
-  char schunk[2000];
-  char schunk_tmp[2000];
+  char schunk[20000];
+  char schunk_tmp[20000];
   int allff;
   u8 ad1,ad2,ad3,ad4;
   u32 ad;
-  //  int hex_chunk_size=MAXQ1852_CHUNK_SIZE;
-  int hex_chunk_size=64;
   int resu;
   dataloc=(u8*)malloc(sizeof(u8)*1024*1024);
   if(NULL==data)
@@ -4949,7 +5019,10 @@ int load_file(char *hexfilename)
       return(EXIT_FAILURE);
     }
   if(EXIT_SUCCESS==extension(".hex",hexfilename))
-    read_hex(hexfilename);
+    {
+      if(EXIT_SUCCESS!=read_hex(hexfilename))
+	return(EXIT_FAILURE);
+    }
   else
     {
       printf("ERROR: <%s> file extension not supported (only .hex)\n",hexfilename);
@@ -4958,11 +5031,17 @@ int load_file(char *hexfilename)
   for(i=0;i<1024*1024;i++)
     dataloc[i]=0xff;
   for(i=0;i<data_len;i++)
-    dataloc[addr[i]]=data[i];
+    if(dataloc[addr[i]]!=0xff)
+      printf("ERROR: data already allocated in %x: %02x-%02x\n",addr[i],dataloc[addr[i]],data[i]);
+    else
+      dataloc[addr[i]]=data[i];
   last_index=addr[data_len-1];
-  for(i=0;i<last_index;i+=hex_chunk_size)
+  for(i=0;i<last_index;i+=chunk_size)
     {
-      ad=(hex_extended_address<<16)^(i);
+      //3.7.14
+      //extended-address is now already included in the address
+      //      ad=(hex_extended_address<<16)^(i);
+      ad=i;
       ad1=ad>>24;
       ad2=(ad>>16)&255;
       ad3=(ad>>8)&255;
@@ -4970,7 +5049,7 @@ int load_file(char *hexfilename)
       sprintf(schunk_addr,"%08x",(ad4<<24)^(ad3<<16)^(ad2<<8)^(ad1));
 
       sprintf(schunk_tmp,"");
-      for(allff=1,k=0;k<hex_chunk_size;k++)
+      for(allff=1,k=0;k<chunk_size;k++)
 	{
 	  if(0xff!=dataloc[i+k])
 	    {
@@ -5063,14 +5142,13 @@ int verify_code_file(char *hexfilename)
   int last_index;
   u8 *dataloc;
   char schunk_addr[10];
-  char schunk[2000];
-  char schunk_tmp[2000];
+  char schunk[20000];
+  char schunk_tmp[20000];
   int allff;
   u8 ad1,ad2,ad3,ad4;
   u32 ad;
-  //  int hex_chunk_size=MAXQ1852_CHUNK_SIZE;
-  int hex_chunk_size=64;
   int resu;
+
   dataloc=(u8*)malloc(sizeof(u8)*1024*1024);
   if(NULL==data)
     {
@@ -5078,7 +5156,10 @@ int verify_code_file(char *hexfilename)
       return(EXIT_FAILURE);
     }
   if(EXIT_SUCCESS==extension(".hex",hexfilename))
-    read_hex(hexfilename);
+    {
+      if(EXIT_SUCCESS!=read_hex(hexfilename))
+	return(EXIT_FAILURE);
+    }
   else
     {
       printf("ERROR: <%s> file extension not supported (only .hex)\n",hexfilename);
@@ -5089,9 +5170,12 @@ int verify_code_file(char *hexfilename)
   for(i=0;i<data_len;i++)
     dataloc[addr[i]]=data[i];
   last_index=addr[data_len-1];
-  for(i=0;i<last_index;i+=hex_chunk_size)
+  for(i=0;i<last_index;i+=chunk_size)
     {
-      ad=(hex_extended_address<<16)^(i);
+      //3.7.14
+      //extended-address is now already included in the address
+      //      ad=(hex_extended_address<<16)^(i);
+      ad=i;
       ad1=ad>>24;
       ad2=(ad>>16)&255;
       ad3=(ad>>8)&255;
@@ -5099,7 +5183,7 @@ int verify_code_file(char *hexfilename)
       sprintf(schunk_addr,"%08x",(ad4<<24)^(ad3<<16)^(ad2<<8)^(ad1));
 
       sprintf(schunk_tmp,"");
-      for(allff=1,k=0;k<hex_chunk_size;k++)
+      for(allff=1,k=0;k<chunk_size;k++)
 	{
 	  if(0xff!=dataloc[i+k])
 	    {
@@ -5305,7 +5389,6 @@ int erase_all_flash_areas(void)
   payload[MAXQ1852_SC_LEN_BYTE2]=length>>8;
   printf("len=%02x\n",length);
   ecdsa_sign_payload();
-  printf("hello\n");
   sprintf(name_file,"erase_all_flash_areas");
   add_payload();
   sprintf(message,"%s",idf_scp_cmd[COMMAND_MAXQ1852_ERASE_ALL_FLASH_AREAS]);
@@ -6024,10 +6107,11 @@ int process_script(void)
 	    break;
 	    //SCP FLORA/ANGELA specific command
 	  case COMMAND_REWRITE_CRK:
-	    if(1==nb_params)
+	    if(2==nb_params)
 	      {
-		//params[0] is the filename containing the RSA PubKey
-		if(EXIT_SUCCESS!=rewrite_crk(params[0]))
+		//params[0] is the filename containing the old PubKey
+		//params[1] is the filename containing the new PubKey
+		if(EXIT_SUCCESS!=rewrite_crk(params[0],params[1]))
 		  {
 		    printf("ERROR: rewrite-crk\n");
 		    return(EXIT_FAILURE);
@@ -6534,7 +6618,7 @@ int process_arg(char *line,int fgets_correction)
   memset(string_pp,0,MAXLINE);
   
   //  resu=process_intvalue(&(config_struct.flash_mb),"flash_size_mb",line,MAX_FLASH_MB);
-  resu=process_intvalue(&j,"flash_size_mb",line,MAX_FLASH_MB,fgets_correction);
+  resu=process_intvalue(&j,"flash_size_mb=",line,MAX_FLASH_MB,fgets_correction);
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR while extracting <flash_size_mb> field\n");
@@ -6546,7 +6630,7 @@ int process_arg(char *line,int fgets_correction)
 	config_struct.flash_mb=j;
       }
   
-  resu=process_hexvalue(&i,config_struct.usn,"usn",line,fgets_correction);
+  resu=process_hexvalue(&i,config_struct.usn,"usn=",line,fgets_correction);
   //simple filtering on acceptable values, 13 or 16
   //stricter filtering will be done later, because at this stage, session_mode may be unknown
   if(EXIT_SUCCESS!=resu)
@@ -6569,7 +6653,7 @@ int process_arg(char *line,int fgets_correction)
 	    }
 	}
     }
-  resu=process_hexvalue(&i,aes_key,"aes_key",line,fgets_correction);	
+  resu=process_hexvalue(&i,aes_key,"aes_key=",line,fgets_correction);	
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR on aes_key retrieval\n");
@@ -6583,7 +6667,7 @@ int process_arg(char *line,int fgets_correction)
 	  return(EXIT_FAILURE);
 	}
     }
-  resu=process_hexvalue(&i,aes_data,"aes_data",line,fgets_correction);
+  resu=process_hexvalue(&i,aes_data,"aes_data=",line,fgets_correction);
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR on aes_data retrieval\n");
@@ -6597,7 +6681,7 @@ int process_arg(char *line,int fgets_correction)
 	  return(EXIT_FAILURE);
 	}
     }
-  resu=process_hexvalue(&i,config_struct.fka,"fka",line,fgets_correction);
+  resu=process_hexvalue(&i,config_struct.fka,"fka=",line,fgets_correction);
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR on fka retrieval\n");
@@ -6611,7 +6695,7 @@ int process_arg(char *line,int fgets_correction)
 	  return(EXIT_FAILURE);
 	}
     }
-  resu=process_hexvalue(&i,config_struct.fkc,"fkc",line,fgets_correction);
+  resu=process_hexvalue(&i,config_struct.fkc,"fkc=",line,fgets_correction);
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR on fkc retrieval\n");
@@ -6625,7 +6709,7 @@ int process_arg(char *line,int fgets_correction)
 	  return(EXIT_FAILURE);
 	}
     }
-  resu=process_hexvalue(&i,config_struct.fks,"fks",line,fgets_correction);
+  resu=process_hexvalue(&i,config_struct.fks,"fks=",line,fgets_correction);
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR on fks retrieval\n");
@@ -6639,7 +6723,7 @@ int process_arg(char *line,int fgets_correction)
 	  return(EXIT_FAILURE);
 	}
     }
-  resu=process_string(g_tcHSMRSALabelKey,"name_of_rsa_key",line,fgets_correction,&l_iFoundString);
+  resu=process_string(g_tcHSMRSALabelKey,"name_of_rsa_key=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6649,7 +6733,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(g_tcHSMECDSALabelKey,"name_of_ecdsa_key",line,fgets_correction,&l_iFoundString);
+  resu=process_string(g_tcHSMECDSALabelKey,"name_of_ecdsa_key=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6659,7 +6743,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(g_tcQuorum_K,"quorum_k",line,fgets_correction,&l_iFoundString);
+  resu=process_string(g_tcQuorum_K,"quorum_k=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6669,7 +6753,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(g_tcQuorum_N,"quorum_n",line,fgets_correction,&l_iFoundString);
+  resu=process_string(g_tcQuorum_N,"quorum_n=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6679,7 +6763,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(ecdsafile,"ecdsa_file",line,fgets_correction,&l_iFoundString);
+  resu=process_string(ecdsafile,"ecdsa_file=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6689,7 +6773,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(rsafile,"rsa_file",line,fgets_correction,&l_iFoundString);
+  resu=process_string(rsafile,"rsa_file=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       
@@ -6701,40 +6785,7 @@ int process_arg(char *line,int fgets_correction)
       found=1;
     }
 	
-	/*
-	resu=process_hexvalue(&i,config_struct.rsa,"rsamod",line,fgets_correction);
-	1if(EXIT_SUCCESS!=resu)
-    {
-      printf("ERROR on rsa retrieval\n");
-      return(EXIT_FAILURE);
-    }
-	  else
-		if(i!=-1)
-		  {
-		config_struct.rsa_len=i;
-		  }
-	  resu=process_hexvalue(&i,config_struct.rsa_pubexp,"public_exponent",line,fgets_correction);
-	  if(EXIT_SUCCESS!=resu)
-		{
-		  printf("ERROR on rsa pub exponent retrieval\n");
-		  return(EXIT_FAILURE);
-		}
-	  else
-		if(i!=-1)
-		  config_struct.rsa_explen=i;
-	  resu=process_hexvalue(&i,config_struct.rsa_privexp,"private_exponent",line,fgets_correction);
-	  if(EXIT_SUCCESS!=resu)
-		{
-		  printf("ERROR on rsa priv exponent retrieval\n");
-		  return(EXIT_FAILURE);
-		}
-	  else
-		if(i!=-1)
-		  {
-		config_struct.rsa_privexplen=i;
-		}
-	*/
-  resu=process_hexint(&tmp_value,"addr_offset",line,fgets_correction);
+  resu=process_hexint(&tmp_value,"addr_offset=",line,fgets_correction);
   if(resu!=EXIT_SUCCESS)
     {
       printf("ERROR while extracting <addr_offset> field\n");
@@ -6746,7 +6797,7 @@ int process_arg(char *line,int fgets_correction)
 	address_offset=tmp_value;
     }
   
-  resu=process_hexint(&tmp_value,"transaction_id",line,fgets_correction);
+  resu=process_hexint(&tmp_value,"transaction_id=",line,fgets_correction);
   if(resu!=EXIT_SUCCESS)
     {
       printf("ERROR while extracting <addr_offset> field\n");
@@ -6759,7 +6810,7 @@ int process_arg(char *line,int fgets_correction)
     }
   
   // Add of chunk_size arguments
-  resu = process_intvalue(&tmp_value,"chunk_size",line,MAX_CHUNK_SIZE,fgets_correction);
+  resu = process_intvalue(&tmp_value,"chunk_size=",line,MAX_CHUNK_SIZE,fgets_correction);
   if ( EXIT_SUCCESS != resu )
     {
       printf("ERROR while extracting <chunk_size> field\n");
@@ -6771,7 +6822,7 @@ int process_arg(char *line,int fgets_correction)
 	chunk_size=tmp_value;
     }
   
-  resu=process_hexvalue(&i,random_number,"random_number",line,fgets_correction);
+  resu=process_hexvalue(&i,random_number,"random_number=",line,fgets_correction);
   if(EXIT_SUCCESS!=resu)
     {
       printf("ERROR on rsa pub exponent retrieval\n");
@@ -6785,7 +6836,7 @@ int process_arg(char *line,int fgets_correction)
 	  return(EXIT_FAILURE);
 	}
     }
-  resu=process_string(output_file,"output_file",line,fgets_correction,&l_iFoundString);
+  resu=process_string(output_file,"output_file=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6795,7 +6846,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(script_file,"script_file",line,fgets_correction,&l_iFoundString);
+  resu=process_string(script_file,"script_file=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6806,7 +6857,7 @@ int process_arg(char *line,int fgets_correction)
       found=1;
     }
   
-  resu=process_string(string_pp,"pp",line,fgets_correction,&l_iFoundString);
+  resu=process_string(string_pp,"pp=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6863,7 +6914,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  resu=process_string(session_string,"session_mode",line,fgets_correction,&l_iFoundString);
+  resu=process_string(session_string,"session_mode=",line,fgets_correction,&l_iFoundString);
   if(l_iFoundString)
     {
       if(EXIT_SUCCESS!=resu)
@@ -6905,7 +6956,7 @@ int process_arg(char *line,int fgets_correction)
 	}
       found=1;
     }
-  if(strstr(line,"verbose")!=NULL)
+  if(strstr(line,"verbose=")!=NULL)
     {
       verbose=(strstr(line,"yes")!=NULL)?TRUE:FALSE;
       found=1;
@@ -6922,7 +6973,7 @@ static int load_args(int argc, char **argv)
 {
   int k;
   int resu;
-  
+  int max_chunk_size;  
   for(k=1;k<argc;k++)
     {
       resu=process_arg(argv[k],0);
@@ -7003,6 +7054,18 @@ static int load_args(int argc, char **argv)
       printf("ERROR: USN with bad length: %d\n",config_struct.usn_len);
       return(EXIT_FAILURE);
     }
+  if(SCP_FLORA_RSA==session_mode)
+    max_chunk_size=FLORA_MAX_CHUNK_SIZE;
+  if(SCP_ANGELA_ECDSA==session_mode)
+    max_chunk_size=ANGELA_MAX_CHUNK_SIZE;
+  if(MSP_MAXQ1852_ECDSA==session_mode)
+    max_chunk_size=MAXQ1852_MAX_CHUNK_SIZE;
+  if(chunk_size>max_chunk_size)
+    {
+      printf("WARNING: provided chunk_size (%d bytes) is larger than the supported max chunk_size (%d bytes)\n",chunk_size,max_chunk_size);
+      chunk_size=max_chunk_size;
+    }
+
   return(EXIT_SUCCESS);
 }
 
@@ -7056,7 +7119,16 @@ int load_default_config(void)
   return(EXIT_SUCCESS);
 }
 
- int load_ini_config(FILE *fp)
+//#4186
+int line_is_void(char *line)
+{
+  int i;
+  for(i=0;i<(int)strlen(line);i++)
+    if(!isblank(line[i]))
+      return(0);
+  return(1);
+}
+int load_ini_config(FILE *fp)
  {
   char line[MAXLINE];
   int resu;
@@ -7069,6 +7141,8 @@ int load_default_config(void)
 	  return(EXIT_FAILURE);
 	}
       if('#'==line[0])
+	continue;
+      if(line_is_void(line))
 	continue;
       resu=process_arg(line,1);
       if(resu!=EXIT_SUCCESS)
