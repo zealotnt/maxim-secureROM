@@ -40,8 +40,9 @@ fi
 
 cp ../secureROM/setup.sh $currentDir/setup.sh
 # Make the folder structure of secureROM-Sirius
-mkdir Host; cd Host
-mkdir customer_scripts; cd customer_scripts
+mkdir Host; cd Host;
+mkdir customer_scripts; cd customer_scripts;
+mkdir lib;
 
 # Copy all of content in support-scripts folder
 check_yn_question "Do you want to copy support-scripts as well ? [y/n]"
@@ -51,23 +52,18 @@ if [ $bResult == "y" ]; then
 	cd -P ../../../secureROM/support-scripts/
 	cp -rp * $currentDir/support-scripts/
 	cd "$tempDir"
-	# cp -rf ../../../secureROM/support-scripts/* $currentDir/support-scripts 
 fi
 
 
 # Copy all of content in keys folder
 cp -rf ../../../secureROM/Host/customer_scripts/keys $currentDir/Host/customer_scripts/keys
 
-# Copy all of content in lib folder
-cp -rf ../../../secureROM/Host/customer_scripts/lib $currentDir/Host/customer_scripts/lib
+# Copy all of content in lib/serial_sender folder
+cp -rf ../../../secureROM/Host/customer_scripts/lib/serial_sender $currentDir/Host/customer_scripts/lib/serial_sender
 # Except for these files
-rm lib/libucl.dll
-rm lib/libucl.so.2.4.1
-rm lib/session_build.exe
-rm lib/serial_sender/MSVCR71.dll
-rm lib/serial_sender/library.zip
-rm lib/serial_sender/w9xpopen.exe
-rm lib/serial_sender/serial_sender.exe
+rm lib/serial_sender/progressbar-2.3.tar.gz
+rm lib/serial_sender/pyserial-2.7.tar.gz
+rm lib/serial_sender/python27.dll
 
 # Copy some script and package in scripts folder
 mkdir scripts; cd scripts
