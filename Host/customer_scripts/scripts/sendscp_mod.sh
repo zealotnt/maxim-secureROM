@@ -1,6 +1,14 @@
 #!/bin/bash
 # Import color code variables
 currentDir=$(pwd)
+testCurrentDir=$(basename $currentDir)
+echo "$testCurrentDir"
+
+if [[ ( $testCurrentDir != "scripts" ) && ( $# = 3 ) ]]; then
+	echo "******* not standing in .../scripts folder, now use absolute path *******"
+	currentDir=/home/root/secureROM-Sirius/Host/customer_scripts/scripts
+fi
+
 if [ -f colorCode.sh ]; then
 	. ./colorCode.sh
 else 
@@ -19,12 +27,12 @@ resetMaxim()
 	fi
 	echo -e "${KRED}Pull the GPIO_Reset pin high${KRESET}"
 	echo high > /sys/class/gpio/gpio81/direction
-
-	echo -e "${KRED}Pull the GPIO_Reset pin low again, wait $timeSleep second${KRESET}"
+	sleep 1
+	echo -e "${KRED}Pull the GPIO_Reset pin low again ${KRESET}"
 	echo low > /sys/class/gpio/gpio81/direction
-
 }
-usage() 
+
+usage()
 {
 	echo " Syntax: sendscp.sh <serialport> <input_dir> <Toogle>"
 	echo "    <serialport> = serial port device (e.g. //dev//ttyS0 (linux) or COM1 (windows))"
@@ -37,7 +45,6 @@ usage()
 if [ $# != 3 ]; then
 	TOOLDIR=$(readlink -e $(dirname $0))
 else
-	#TOOLDIR=$(pwd)
 	TOOLDIR=$currentDir
 	echo -e "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
 fi
@@ -114,42 +121,24 @@ fi
 
 
 if [ $bToogleGPIO == 'y' ]; then
-	echo -e "${KRED}Going to enable GPIO81 of iMX6${KRESET}"
-	if [ ! -d /sys/class/gpio/gpio81 ]; then
-		echo "Export gpio81 for manually usage"
-		echo 81 > /sys/class/gpio/export
-	else
-		echo "Already exported"
-	fi
-	echo -e "${KRED}Pull the GPIO_Reset pin high${KRESET}"
-	echo high > /sys/class/gpio/gpio81/direction
-fi
-
-if [ $bToogleGPIO != 'y' ]; then
+	resetMaxim
+else
 	echo "Ready to execute $(readlink -e .)"
-	echo -e "${KLRED}${KBOLD}Power cycle the MAX32550 system then press [Enter] IMMEDIATELY!${KRESET}"
-	read reply
+	echo -e "${KLRED}${KBOLD}Power cycle the MAX32550 system now !${KRESET}"
 fi
 
 echo "Please wait..."
-#Waiting to avoid the USB SCP time window (4s by default)
-
-if [ $bToogleGPIO == 'y' ]; then
-	echo -e "${KRED}Pull the GPIO_Reset pin low again, wait $timeSleep second${KRESET}"
-	echo low > /sys/class/gpio/gpio81/direction
-fi
 
 if [ $bToogleGPIO == 'y' ]; then
 	# Add retry mechanism to shell script
-	retries=2
+	retries=3
 	while [ $retries -ne 0 ]; do
 		$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 		case $? in
-		0) 	echo -e "${KRED}Flash success !!!${KRESET}"
-			break
+		0) 	break
 			;;
-		*)	echo -e "${KRED}Flash fail, try again, $retries times left ${KRESET}"
-			retries=$((retries-1))
+		*)	retries=$((retries-1))
+			echo -e "${KRED}Flash fail, try again, $retries times left ${KRESET}"
 			resetMaxim
 			;;
 		esac
@@ -166,17 +155,15 @@ if [ $? -ne 0 ] ; then
 	exit 1
 fi
 
-if [ $retries -eq 0 ];then
-	echo "Operation fail"
-	exit 1
-fi
-
-echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
-
 if [ $bToogleGPIO == 'y' ]; then
+	if [ $retries -eq 0 ];then
+		echo -e "${KRED}${KBOLD}FLASHING FAIL.${KRESET}"
+		exit 1
+	fi
+	
+	echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
 	echo "Reseting Maxim"
-	echo high > /sys/class/gpio/gpio81/direction
-	echo low > /sys/class/gpio/gpio81/direction
+	resetMaxim
 fi
 
 exit 0

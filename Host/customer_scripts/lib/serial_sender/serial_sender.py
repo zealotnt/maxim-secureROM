@@ -287,7 +287,7 @@ By default the timeout is 5s")
     parser.add_option_group(group)
 
     parser.add_option("-f", "--first-retry", dest="first_retry_nb", type="int",
-                      default=110, help="specifies the number of retry for first packet. \
+                      default=10, help="specifies the number of retry for first packet. \
 By default the number is 200")
 
     group = OptionGroup(parser, "Extra Options")
