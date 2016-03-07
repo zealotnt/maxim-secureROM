@@ -1,9 +1,10 @@
 #!/bin/bash
 # Import color code variables
+currentDir=$(pwd)
 if [ -f colorCode.sh ]; then
 	. ./colorCode.sh
 else 
-	. /home/root/secureROM-Sirius/Host/customer_scripts/scripts/colorCode.sh
+	. $currentDir/colorCode.sh
 fi
 
 
@@ -22,7 +23,6 @@ resetMaxim()
 	echo -e "${KRED}Pull the GPIO_Reset pin low again, wait $timeSleep second${KRESET}"
 	echo low > /sys/class/gpio/gpio81/direction
 
-	sleep 2
 }
 usage() 
 {
@@ -38,7 +38,7 @@ if [ $# != 3 ]; then
 	TOOLDIR=$(readlink -e $(dirname $0))
 else
 	#TOOLDIR=$(pwd)
-	TOOLDIR=/home/root/secureROM-Sirius/Host/customer_scripts/scripts
+	TOOLDIR=$currentDir
 	echo -e "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
 fi
 
@@ -133,14 +133,11 @@ fi
 
 echo "Please wait..."
 #Waiting to avoid the USB SCP time window (4s by default)
-timeSleep=2
 
 if [ $bToogleGPIO == 'y' ]; then
 	echo -e "${KRED}Pull the GPIO_Reset pin low again, wait $timeSleep second${KRESET}"
 	echo low > /sys/class/gpio/gpio81/direction
 fi
-
-sleep $timeSleep
 
 if [ $bToogleGPIO == 'y' ]; then
 	# Add retry mechanism to shell script
@@ -179,7 +176,6 @@ echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
 if [ $bToogleGPIO == 'y' ]; then
 	echo "Reseting Maxim"
 	echo high > /sys/class/gpio/gpio81/direction
-	sleep 1
 	echo low > /sys/class/gpio/gpio81/direction
 fi
 
