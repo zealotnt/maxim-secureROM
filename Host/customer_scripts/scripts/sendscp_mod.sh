@@ -1,5 +1,17 @@
 #!/bin/bash
 # Import color code variables
+
+# Error code returned:
+# 2: "unexpected parameter to scripts"
+# 3: "param <Toogle> not invalid, only 'y/n' expected"
+# 4: "Error:: the <input_compressed_file> ($inputCompressed) does not exist."
+# 5: "Input param expected !!"
+# 6: "Error:: $serialport: invalid. Make sure the serial port exists."
+# 7: "Unknown system \`$system'!"
+# 8: "Error:: the <input_dir> ($input) does not seem to contain a SCP script."
+# 9: "SCP errorred, out of retries"
+# 10: same as 9
+
 currentDir=$(pwd)
 testCurrentDir=$(basename $currentDir)
 echo "$testCurrentDir"
@@ -68,7 +80,7 @@ esac
 
 if [[ ($bToogleGPIO != 'y') && ($bToogleGPIO != 'n') ]]; then
 	echo "param <Toogle> not invalid, only 'y/n' expected"
-	exit 2
+	exit 3
 fi
 
 sync
@@ -78,7 +90,7 @@ if [ -d "$inputCompressed" ]; then
 else
 	if [ ! -e "$inputCompressed" ]; then
 	echo "Error:: the <input_compressed_file> ($inputCompressed) does not exist."
-	exit 1
+	exit 4
 	fi
 	bCompress=1
 fi
@@ -93,8 +105,8 @@ elif [ $bFolder == 1 ]; then
 	input=$2
 	cd -- "$input"  ||  exit
 else
-	echo "Input expected !!"
-	exit 1
+	echo "Input param expected !!"
+	exit 5
 fi
 
 #identifying the OS, as cygwin uses a serial_sender.exe while linux directly uses the python application
@@ -106,17 +118,17 @@ case $system in
 	readonly serial_sender_bin=serial_sender.py
 	if [ ! -e $serialport ]; then
 	  echo "Error:: $serialport: invalid. Make sure the serial port exists."
-	  exit 1
+	  exit 6
 	fi
 	;;
 *)	echo >&2 "Unknown system \`$system'!"
-	exit 1
+	exit 7
 	;;
 esac
 
 if [ ! -f packet.list ]; then
 echo "Error:: the <input_dir> ($input) does not seem to contain a SCP script."
-exit 1
+exit 8
 fi
 
 
@@ -152,13 +164,13 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR."
 	echo "Make sure you pressed [Enter] right after powering-up the system."
 	echo "Make sure you have no terminal opened on $serialport."
-	exit 1
+	exit 9
 fi
 
 if [ $bToogleGPIO == 'y' ]; then
 	if [ $retries -eq 0 ];then
 		echo -e "${KRED}${KBOLD}FLASHING FAIL.${KRESET}"
-		exit 1
+		exit 10
 	fi
 	
 	echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
