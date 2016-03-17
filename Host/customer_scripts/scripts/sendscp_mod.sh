@@ -14,10 +14,16 @@
 
 currentDir=$(pwd)
 testCurrentDir=$(basename $currentDir)
-echo "$testCurrentDir"
+scriptHdr="[SCP_SCRIPT]"
+
+mlsPrint()
+{
+echo -e "${scriptHdr}" $1	
+}
+mlsPrint "$testCurrentDir"
 
 if [[ ( $testCurrentDir != "scripts" ) && ( $# = 3 ) ]]; then
-	echo "******* not standing in .../scripts folder, now use absolute path *******"
+	mlsPrint "------------- not standing in .../scripts folder, now use absolute path -----------------"
 	currentDir=/home/root/secureROM-Sirius/Host/customer_scripts/scripts
 fi
 
@@ -30,35 +36,33 @@ fi
 
 resetMaxim()
 {
-	echo -e "${KRED}Going to enable GPIO81 of iMX6${KRESET}"
+	mlsPrint "${KRED}Going to enable GPIO81 of iMX6${KRESET}"
 	if [ ! -d /sys/class/gpio/gpio81 ]; then
-		echo "Export gpio81 for manually usage"
+		mlsPrint "Export gpio81 for manually usage"
 		echo 81 > /sys/class/gpio/export
-	else
-		echo "Already exported"
 	fi
-	echo -e "${KRED}Pull the GPIO_Reset pin high${KRESET}"
+	mlsPrint "${KRED}Pull the GPIO_Reset pin high${KRESET}"
 	echo high > /sys/class/gpio/gpio81/direction
 	sleep 1
-	echo -e "${KRED}Pull the GPIO_Reset pin low again ${KRESET}"
+	mlsPrint "${KRED}Pull the GPIO_Reset pin low again ${KRESET}"
 	echo low > /sys/class/gpio/gpio81/direction
 }
 
 usage()
 {
-	echo " Syntax: sendscp.sh <serialport> <input_dir> <Toogle>"
-	echo "    <serialport> = serial port device (e.g. //dev//ttyS0 (linux) or COM1 (windows))"
-	echo "    <input_dir> = directory that contains the SCP packet list"
-	echo "    <Toogle> = accept 'y//n', y for toggle reset GPIO, n for manually reset it"
-	echo "Note: "
-	echo "See also: build_application_mod.sh to build an SCP script."
+	mlsPrint " Syntax: sendscp.sh <serialport> <input_dir> <Toogle>"
+	mlsPrint "    <serialport> = serial port device (e.g. //dev//ttyS0 (linux) or COM1 (windows))"
+	mlsPrint "    <input_dir> = directory that contains the SCP packet list"
+	mlsPrint "    <Toogle> = accept 'y//n', y for toggle reset GPIO, n for manually reset it"
+	mlsPrint "Note: "
+	mlsPrint "See also: build_application_mod.sh to build an SCP script."
 }
 
 if [ $# != 3 ]; then
 	TOOLDIR=$(readlink -e $(dirname $0))
 else
 	TOOLDIR=$currentDir
-	echo -e "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
+	mlsPrint "${KRED}Run on Sirius platform, set up TOOLDIR as current directory${KRESET}"
 fi
 
 bFolder=0
@@ -79,17 +83,17 @@ case $# in
 esac
 
 if [[ ($bToogleGPIO != 'y') && ($bToogleGPIO != 'n') ]]; then
-	echo "param <Toogle> not invalid, only 'y/n' expected"
+	mlsPrint "param <Toogle> not invalid, only 'y/n' expected"
 	exit 3
 fi
 
 sync
-echo ""
+mlsPrint ""
 if [ -d "$inputCompressed" ]; then
 	bFolder=1
 else
 	if [ ! -e "$inputCompressed" ]; then
-	echo "Error:: the <input_compressed_file> ($inputCompressed) does not exist."
+	mlsPrint "Error:: the <input_compressed_file> ($inputCompressed) does not exist."
 	exit 4
 	fi
 	bCompress=1
@@ -105,7 +109,7 @@ elif [ $bFolder == 1 ]; then
 	input=$2
 	cd -- "$input"  ||  exit
 else
-	echo "Input param expected !!"
+	mlsPrint "Input param expected !!"
 	exit 5
 fi
 
@@ -117,7 +121,7 @@ case $system in
 *Linux*)  
 	readonly serial_sender_bin=serial_sender.py
 	if [ ! -e $serialport ]; then
-	  echo "Error:: $serialport: invalid. Make sure the serial port exists."
+	  mlsPrint "Error:: $serialport: invalid. Make sure the serial port exists."
 	  exit 6
 	fi
 	;;
@@ -127,7 +131,7 @@ case $system in
 esac
 
 if [ ! -f packet.list ]; then
-echo "Error:: the <input_dir> ($input) does not seem to contain a SCP script."
+mlsPrint "Error:: the <input_dir> ($input) does not seem to contain a SCP script."
 exit 8
 fi
 
@@ -135,11 +139,11 @@ fi
 if [ $bToogleGPIO == 'y' ]; then
 	resetMaxim
 else
-	echo "Ready to execute $(readlink -e .)"
-	echo -e "${KLRED}${KBOLD}Power cycle the MAX32550 system now !${KRESET}"
+	mlsPrint "Ready to execute $(readlink -e .)"
+	mlsPrint "${KLRED}${KBOLD}Power cycle the MAX32550 system now !${KRESET}"
 fi
 
-echo "Please wait..."
+mlsPrint "Please wait..."
 
 if [ $bToogleGPIO == 'y' ]; then
 	# Add retry mechanism to shell script
@@ -150,7 +154,7 @@ if [ $bToogleGPIO == 'y' ]; then
 		0) 	break
 			;;
 		*)	retries=$((retries-1))
-			echo -e "${KRED}Flash fail, try again, $retries times left ${KRESET}"
+			mlsPrint "${KRED}Flash fail, try again, $retries times left ${KRESET}"
 			resetMaxim
 			;;
 		esac
@@ -161,20 +165,20 @@ else
 fi
 
 if [ $? -ne 0 ] ; then
-	echo "ERROR."
-	echo "Make sure you pressed [Enter] right after powering-up the system."
-	echo "Make sure you have no terminal opened on $serialport."
+	mlsPrint "ERROR."
+	mlsPrint "Make sure you pressed [Enter] right after powering-up the system."
+	mlsPrint "Make sure you have no terminal opened on $serialport."
 	exit 9
 fi
 
 if [ $bToogleGPIO == 'y' ]; then
 	if [ $retries -eq 0 ];then
-		echo -e "${KRED}${KBOLD}FLASHING FAIL.${KRESET}"
+		mlsPrint "${KRED}${KBOLD}FLASHING FAIL.${KRESET}"
 		exit 10
 	fi
 	
-	echo -e "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
-	echo "Reseting Maxim"
+	mlsPrint "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
+	mlsPrint "Reseting Maxim"
 	resetMaxim
 fi
 
