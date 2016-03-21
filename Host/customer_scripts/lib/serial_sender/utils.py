@@ -3,8 +3,8 @@ __author__ = 'bvinot'
 import sys
 import os
 
-VERBOSE = 1
-EXTRA_VERBOSE = 2
+VERBOSE = 0
+EXTRA_VERBOSE = 0
 
 class bcolors:
     HEADER = '\033[95m'

@@ -70,7 +70,7 @@ class ScpPacket:
         try:
             self.bl_scp.setTimeout(self.timeout)
             self.bl_scp.write(self.packet_data)
-            self.bl_scp.flush()
+            #self.bl_scp.flush()
         except Exception as inst:
             print inst
             print_err("Error" + self.file_name)

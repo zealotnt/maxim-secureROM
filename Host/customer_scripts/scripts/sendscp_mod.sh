@@ -18,8 +18,9 @@ scriptHdr="[SCP_SCRIPT]"
 
 mlsPrint()
 {
-echo -e "${scriptHdr}" $1	
+	echo -e "${scriptHdr}" $1	
 }
+
 mlsPrint "$testCurrentDir"
 
 if [[ ( $testCurrentDir != "scripts" ) && ( $# = 3 ) ]]; then
@@ -147,7 +148,7 @@ mlsPrint "Please wait..."
 
 if [ $bToogleGPIO == 'y' ]; then
 	# Add retry mechanism to shell script
-	retries=3
+	retries=7
 	while [ $retries -ne 0 ]; do
 		$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
 		case $? in
