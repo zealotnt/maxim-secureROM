@@ -142,8 +142,8 @@ fi
 
     cat >> sb_script.txt << EOF
 write-timeout U 0000
-# write-timeout V 0000
-write-timeout 0 F300
+write-timeout V 0000
+write-timeout 0 FA00
 EOF
 
 $TOOLDIR/../lib/session_build.exe session_mode=SCP_ANGELA_ECDSA verbose=no output_file=$OUTPUTDIR/session_angela_binary pp=ECDSA addr_offset=00000000 chunk_size=4094 script_file=sb_script.txt ecdsa_file=$KEYFILE  &&

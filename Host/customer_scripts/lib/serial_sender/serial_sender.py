@@ -204,6 +204,10 @@ def process_packet(packet_list, options):
     if options.verbose >= VERBOSE:
         print 'Trying to Connect.'
 
+    if options.enableMaximReset == True:
+        print "Try reset Maxim"
+        resetMaxim()
+
     bbar = progressbar.ProgressBar(widgets=[progressbar.AnimatedMarker()], maxval=options.first_retry_nb - 1).start()
     for i in bbar((i for i in range(options.first_retry_nb))):
         try:
@@ -250,6 +254,12 @@ def process_packet(packet_list, options):
     except Exception as insts:
         raise Exception()
 
+def resetMaxim():
+    MAXIM_RESET_PIN = 81
+    MAXIM_PULL_LOW="echo " + "high " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
+    MAXIM_PULL_HIGH="echo " + "low " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
+    os.system(MAXIM_PULL_LOW)
+    os.system(MAXIM_PULL_HIGH)
 
 # ---- MAIN
 
@@ -305,6 +315,9 @@ By default the number is 200")
 
     group.add_option("-c", "--chip", dest="chip_name",
                      help="Force CHIP selection for error identification", metavar="CHIP")
+
+    group.add_option("-r", "--resetMaxim", dest="enableMaximReset", action="store_true",
+                     help="Enable Maxim Reset functionality (Only in SIRIUS imx6)", default=False)
 
     parser.add_option_group(group)
 

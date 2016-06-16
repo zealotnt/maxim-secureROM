@@ -15,6 +15,7 @@
 currentDir=$(pwd)
 testCurrentDir=$(basename $currentDir)
 scriptHdr="[SCP_SCRIPT]"
+MAX_RETRY_TIMES=3
 
 mlsPrint()
 {
@@ -59,7 +60,7 @@ usage()
 	mlsPrint "See also: build_application_mod.sh to build an SCP script."
 }
 
-if [ $# != 3 ]; then
+if [ $# -eq 2 ]; then
 	TOOLDIR=$(readlink -e $(dirname $0))
 else
 	TOOLDIR=$currentDir
@@ -73,10 +74,18 @@ case $# in
 2)	readonly serialport=$1
 	readonly inputCompressed=$2
 	readonly bToogleGPIO='n'
+	readonly numOfFirstTry=200
 	;;
 3)	readonly serialport=$1
 	readonly inputCompressed=$2
 	readonly bToogleGPIO=$3
+	readonly numOfFirstTry=0
+	;;
+4)	readonly serialport=$1
+	readonly inputCompressed=$2
+	readonly bToogleGPIO=$3
+	readonly numOfFirstTry=$4
+	echo "First SCP try times = $numOfFirstTry"
 	;;
 *)	usage  >&2
 	exit 2
@@ -148,9 +157,13 @@ mlsPrint "Please wait..."
 
 if [ $bToogleGPIO == 'y' ]; then
 	# Add retry mechanism to shell script
-	retries=7
+	retries=$MAX_RETRY_TIMES
 	while [ $retries -ne 0 ]; do
-		$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
+		if [ $numOfFirstTry -ne 0 ]; then
+			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -f $numOfFirstTry -r
+		else
+			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -r
+		fi
 		case $? in
 		0) 	break
 			;;
