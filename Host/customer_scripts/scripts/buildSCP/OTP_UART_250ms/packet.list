@@ -13,5 +13,9 @@ session_angela_binary.0000012.host.write_timeout.packet
 session_angela_binary.0000013.bl.ack.packet
 session_angela_binary.0000014.bl.write_timeout_response.packet
 session_angela_binary.0000015.host.ack.packet
-session_angela_binary.0000016.host.disconnection_request.packet
-session_angela_binary.0000017.bl.disconnection_reply.packet
+session_angela_binary.0000016.host.write_timeout.packet
+session_angela_binary.0000017.bl.ack.packet
+session_angela_binary.0000018.bl.write_timeout_response.packet
+session_angela_binary.0000019.host.ack.packet
+session_angela_binary.0000020.host.disconnection_request.packet
+session_angela_binary.0000021.bl.disconnection_reply.packet
