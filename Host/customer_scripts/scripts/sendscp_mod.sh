@@ -11,6 +11,7 @@
 # 8: "Error:: the <input_dir> ($input) does not seem to contain a SCP script."
 # 9: "SCP errorred, out of retries"
 # 10: same as 9
+# 11: "SCP errored, because trying to write written value, like OTP settings or Public key"
 
 currentDir=$(pwd)
 testCurrentDir=$(basename $currentDir)
@@ -160,12 +161,16 @@ if [ $bToogleGPIO == 'y' ]; then
 	retries=$MAX_RETRY_TIMES
 	while [ $retries -ne 0 ]; do
 		if [ $numOfFirstTry -ne 0 ]; then
-			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -f $numOfFirstTry -r
+			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -f $numOfFirstTry -r -w
 		else
 			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -r
 		fi
-		case $? in
+		scpRet=$?
+		case $scpRet in
 		0) 	break
+			;;
+		1)	mlsPrint "${KGRN}Restrict data, Key/OTP settings already loaded${KRESET}"
+			exit 11
 			;;
 		*)	retries=$((retries-1))
 			mlsPrint "${KRED}Flash fail, try again, $retries times left ${KRESET}"

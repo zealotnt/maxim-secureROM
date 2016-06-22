@@ -237,6 +237,8 @@ def process_packet(packet_list, options):
                 current += 1
                 bar.update(current)
         except Exception as insts:
+            if options.warningRestrictedData:
+                raise RuntimeError('RestrictedProcessing')
             raise Exception()
 
     if options.verbose <= VERBOSE:
@@ -319,6 +321,9 @@ By default the number is 200")
     group.add_option("-r", "--resetMaxim", dest="enableMaximReset", action="store_true",
                      help="Enable Maxim Reset functionality (Only in SIRIUS imx6)", default=False)
 
+    group.add_option("-w", "--warning", dest="warningRestrictedData", action="store_true",
+                     help="Tell SCP script that this is a sensitive data, could be fail if overwritten", default=False)
+
     parser.add_option_group(group)
 
     (options, args) = parser.parse_args()
@@ -361,6 +366,9 @@ By default the number is 200")
             pass
         process_packet(packets_list, options)
         print_ok("SCP session OK")
+    except RuntimeError:
+        print_err("Restricted Data")
+        return_code = 1
     except ValueError:
         print_err("Connection Failed")
         return_code = -2
