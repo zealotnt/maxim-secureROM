@@ -72,7 +72,7 @@ cp ../../../../secureROM/Host/customer_scripts/scripts/scp_settings.txt .
 cp ../../../../secureROM/Host/customer_scripts/scripts/sendscp_mod.sh .
 mkdir buildSCP
 cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk ./buildSCP/prod_p3_write_crk
-cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/testRTC ./buildSCP/testRTC
-cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/maximFw ./buildSCP/maximFw
+#cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/testRTC ./buildSCP/testRTC
+#cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/maximFw ./buildSCP/maximFw
 cp -rf ../../../../secureROM/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms ./buildSCP/OTP_UART_250ms
 echo -e "${ENDL}${KLRED}${KBOLD}Done build secureROM-Sirius!!!${KRESET}"
