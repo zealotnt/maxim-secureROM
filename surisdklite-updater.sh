@@ -13,7 +13,7 @@ SURISCP_UPDATER=$DIR/Host/customer_scripts/lib/serial_sender/serial_sender.py
 SURISCP_FIRST_TRY=100
 
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
-SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl
+SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl-lite
 
 ##################################################################################################
 # function definition
