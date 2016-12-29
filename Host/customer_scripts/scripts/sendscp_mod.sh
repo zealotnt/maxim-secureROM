@@ -20,7 +20,7 @@ MAX_RETRY_TIMES=3
 
 mlsPrint()
 {
-	echo -e "${scriptHdr}" $1	
+	echo -e "${scriptHdr}" $1
 }
 
 mlsPrint "$testCurrentDir"
@@ -32,7 +32,7 @@ fi
 
 if [ -f colorCode.sh ]; then
 	. ./colorCode.sh
-else 
+else
 	. $currentDir/colorCode.sh
 fi
 
@@ -129,7 +129,7 @@ system=$(uname -s)
 case $system in
 *CYGWIN*) readonly serial_sender_bin=serial_sender.exe
 	;;
-*Linux*)  
+*Linux*)
 	readonly serial_sender_bin=serial_sender.py
 	if [ ! -e $serialport ]; then
 	  mlsPrint "Error:: $serialport: invalid. Make sure the serial port exists."
@@ -161,9 +161,9 @@ if [ $bToogleGPIO == 'y' ]; then
 	retries=$MAX_RETRY_TIMES
 	while [ $retries -ne 0 ]; do
 		if [ $numOfFirstTry -ne 0 ]; then
-			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -f $numOfFirstTry -r -w
+			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v -v -f $numOfFirstTry -r -w packet.list
 		else
-			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list -r
+			$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v -v -r packet.list
 		fi
 		scpRet=$?
 		case $scpRet in
@@ -180,7 +180,7 @@ if [ $bToogleGPIO == 'y' ]; then
 	done
 else
 	# Normally, we don't need to retry so many times when not run with Sirius
-	$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v packet.list
+	$TOOLDIR/../lib/serial_sender/$serial_sender_bin -s$serialport -t 2 -v -v packet.list
 fi
 
 if [ $? -ne 0 ] ; then
@@ -195,7 +195,7 @@ if [ $bToogleGPIO == 'y' ]; then
 		mlsPrint "${KRED}${KBOLD}FLASHING FAIL.${KRESET}"
 		exit 10
 	fi
-	
+
 	mlsPrint "${KRED}${KBOLD}FLASHING SUCCESS.${KRESET}"
 	mlsPrint "Reseting Maxim"
 	resetMaxim

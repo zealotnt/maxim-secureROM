@@ -202,7 +202,7 @@ def process_packet(packet_list, options):
         bl_scp.setRTS(False)
 
     if options.verbose >= VERBOSE:
-        print 'Trying to Connect.'
+        print 'Trying to Connect. Reset/Repower maxim for flashing'
 
     if options.enableMaximReset == True:
         print "Try reset Maxim"
