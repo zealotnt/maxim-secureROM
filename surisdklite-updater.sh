@@ -10,6 +10,7 @@ cmdname=$(basename $0)
 . $DIR/Host/customer_scripts/scripts/colorCode.sh
 
 SURISCP_UPDATER=$DIR/Host/customer_scripts/lib/serial_sender/serial_sender.py
+SURISDK_UPDATER=$DIR/Host/surisdk-fw-upgrade/surisdk_lite_updater
 SURISCP_FIRST_TRY=100
 
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
@@ -19,7 +20,7 @@ SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl-lite
 # function definition
 ##################################################################################################
 echoerr() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLRED}$@${KRESET}${ENDL}" 1>&2; fi }
-echonoti() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLGRN}$@${KRESET}${ENDL}" 1>&2; fi }
+echonoti() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLGRN}$@${KRESET}" 1>&2; fi }
 
 usage()
 {
@@ -65,7 +66,7 @@ UpdateFirmwareSCP()
 	python $SURISCP_UPDATER -s $SERIAL_PORT -t 2 -v -f $SURISCP_FIRST_TRY -w packet.list
 	scpRet=$?
 	case $scpRet in
-	0) 	break
+	0)
 		;;
 	1)	echoerr "Restrict data, Key/OTP settings already loaded"
 		retVal=2
@@ -81,26 +82,32 @@ UpdateFirmwareSCP()
 
 EraseMaximFlash()
 {
-	echo "**************************************************"
+	echonoti "**************************************************"
 	echonoti "Erase flash of Maxim"
 	UpdateFirmwareSCP $SURI_ERASER_DIR
-	echo "**************************************************"
+	retVal=$?
+	echonoti "**************************************************"
+	return $retVal
 }
 
 UpgradeSuribl()
 {
-	echo "**************************************************"
+	echonoti "**************************************************"
 	echonoti "Update Maxim 2nd bootloader"
 	UpdateFirmwareSCP $SURIBL_FW_DIR
-	echo "**************************************************"
+	retVal=$?
+	echonoti "**************************************************"
+	return $retVal
 }
 
 UpgradeSurisdk()
 {
-	echo "**************************************************"
-	echonoti "Update Maxim surisdk firmware, using $1"
-	echo "UpgradeSurisdk"
-	echo "**************************************************"
+	echonoti "**************************************************"
+	echonoti "Update Maxim surisdk firmware, using $UPGRADE_FILE"
+	$SURISDK_UPDATER $SERIAL_PORT $UPGRADE_FILE
+	retVal=$?
+	echonoti "**************************************************"
+	return $retVal
 }
 
 ##################################################################################################
@@ -168,12 +175,21 @@ CheckValidFileType $UPGRADE_TYPE "${UPGRADE_TYPE_LIST[@]}"
 
 if [[ "$UPGRADE_TYPE" == "ERASER" || "$UPGRADE_TYPE" == "ALL" ]]; then
 	EraseMaximFlash
+	if [[ $? != 0 ]]; then
+		exit 1
+	fi
 fi
 
 if [[ "$UPGRADE_TYPE" == "SURIBL" || "$UPGRADE_TYPE" == "ALL" ]]; then
 	UpgradeSuribl
+	if [[ $? != 0 ]]; then
+		exit 1
+	fi
 fi
 
 if [[ "$UPGRADE_TYPE" == "SURISDK" || "$UPGRADE_TYPE" == "ALL" ]]; then
 	UpgradeSurisdk
+	if [[ $? != 0 ]]; then
+		exit 1
+	fi
 fi
