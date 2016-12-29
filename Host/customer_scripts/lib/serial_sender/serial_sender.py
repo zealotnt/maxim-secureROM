@@ -80,7 +80,7 @@ import progressbar
 import sys
 import serial
 
-from utils import print_ok, print_err
+from utils import print_ok, print_err, print_noti
 from optparse import OptionParser, OptionGroup
 from serial.tools import list_ports
 from scan import scan
@@ -202,7 +202,7 @@ def process_packet(packet_list, options):
         bl_scp.setRTS(False)
 
     if options.verbose >= VERBOSE:
-        print 'Trying to Connect. Reset/Repower maxim for flashing'
+        print_noti('Trying to Connect. Please Reset/Repower maxim for flashing')
 
     if options.enableMaximReset == True:
         print "Try reset Maxim"

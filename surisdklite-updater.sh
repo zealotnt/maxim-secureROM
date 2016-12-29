@@ -25,13 +25,13 @@ echonoti() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLGRN}$@${KRESET}" 1
 usage()
 {
 	echo "Usage:"
-	echo "bash $cmdname [-p COMPORT] [-t upgrade-type]"
-	echo "-p PORT | --port=PORT       Serial device to interface with reader"
-	echo "                            ex, -p /dev/ttyUSB0"
-	echo "-t | --type=UPGRADE_TYPE    Upgrade firmware type"
-	echo "                            support types: '${UPGRADE_TYPE_LIST[@]}', if no type specify, 'ALL' type will be default"
-	echo "-f | --file=SURISDK         Location of surisdk firmware, should be binary/json file"
-	echo "-h | --help                 Show this message"
+	echo "  bash $cmdname [-p COMPORT] [-t upgrade-type]"
+	echo "  -p PORT | --port=PORT       Serial device to interface with reader"
+	echo "                              ex, -p /dev/ttyUSB0"
+	echo "  -t | --type=UPGRADE_TYPE    Upgrade firmware type"
+	echo "                              support types: '${UPGRADE_TYPE_LIST[@]}', if no type specify, 'ALL' type will be default"
+	echo "  -f | --file=SURISDK         Location of surisdk firmware, should be binary/json file"
+	echo "  -h | --help                 Show this message"
 	exit 1
 }
 
@@ -167,6 +167,7 @@ fi
 if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "SURISDK" ]]; then
 	if [[ ! -f "$UPGRADE_FILE" ]]; then
 		echoerr "surisdk firmware file '$UPGRADE_FILE' not found"
+		usage
 		exit 1
 	fi
 fi
