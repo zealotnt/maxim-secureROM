@@ -15,6 +15,8 @@ SURISCP_FIRST_TRY=100
 
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
 SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl-lite
+SURI_OTP_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms
+SURI_KEY_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk
 
 ##################################################################################################
 # function definition
@@ -69,10 +71,10 @@ UpdateFirmwareSCP()
 	0)
 		;;
 	1)	echoerr "Restrict data, Key/OTP settings already loaded"
-		retVal=2
+		retVal=1
 		;;
 	*)	echoerr "Suribl flash fail"
-		retVal=3
+		retVal=2
 		;;
 	esac
 
@@ -86,6 +88,34 @@ EraseMaximFlash()
 	echonoti "Erase flash of Maxim"
 	UpdateFirmwareSCP $SURI_ERASER_DIR
 	retVal=$?
+	echonoti "**************************************************"
+	return $retVal
+}
+
+LoadMaximKey()
+{
+	echonoti "**************************************************"
+	echonoti "Load Key of Maxim"
+	UpdateFirmwareSCP $SURI_KEY_DIR
+	retVal=$?
+	# load key could fail, if it already loaded key, so continue if load key fail
+	if [[ $retVal == 1 ]]; then
+		retVal=0
+	fi
+	echonoti "**************************************************"
+	return $retVal
+}
+
+LoadMaximOTP()
+{
+	echonoti "**************************************************"
+	echonoti "Load OTP of Maxim"
+	UpdateFirmwareSCP $SURI_OTP_DIR
+	retVal=$?
+	# load otp could fail, if it already loaded otp, so continue if load otp fail
+	if [[ $retVal == 1 ]]; then
+		retVal=0
+	fi
 	echonoti "**************************************************"
 	return $retVal
 }
@@ -173,6 +203,17 @@ if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "SURISDK" ]]; then
 fi
 
 CheckValidFileType $UPGRADE_TYPE "${UPGRADE_TYPE_LIST[@]}"
+
+if [[ "$UPGRADE_TYPE" == "ALL" ]]; then
+	LoadMaximKey
+	if [[ $? != 0 ]]; then
+		exit 1
+	fi
+	LoadMaximOTP
+	if [[ $? != 0 ]]; then
+		exit 1
+	fi
+fi
 
 if [[ "$UPGRADE_TYPE" == "ERASER" || "$UPGRADE_TYPE" == "ALL" ]]; then
 	EraseMaximFlash
