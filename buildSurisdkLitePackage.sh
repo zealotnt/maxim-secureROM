@@ -21,19 +21,16 @@ check_yn_question()
 
 if [ ! -d ../$TARGET_FOLDER ]; then
 	echo "Creating $TARGET_FOLDER folder"
-	cd ..
-	mkdir $TARGET_FOLDER
 else
 	echo "$TARGET_FOLDER folder Already present, do you want to remove it ?"
 	check_yn_question "Do you want to remove that existing directory? [y/n]"
 	if [ $bResult == "y" ]; then
-		cd ..
 		rm -rf $TARGET_FOLDER
-		mkdir $TARGET_FOLDER
-	else
-		exit 1
 	fi
 fi
+
+cd ..
+mkdir $TARGET_FOLDER
 
 # Make the folder structure of secureROM
 cd $TARGET_FOLDER
