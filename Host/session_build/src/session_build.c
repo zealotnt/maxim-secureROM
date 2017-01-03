@@ -1904,9 +1904,6 @@ int rsa_sign_payload(void)
 	  printf("ERROR in verify signature");
 	  return(EXIT_FAILURE);
 	}
-    }
-  for(i=0;i<config_struct.rsa_len;i++)
-    payload[ipayload++]=signature[i];
 #else
 		l_iSignatureLength=UCL_RSA_KEY_MAXSIZE;
 		unsigned long l_ulAttributeKeyType = CKA_LABEL;
@@ -1935,13 +1932,17 @@ int rsa_sign_payload(void)
 			}
 			return(EXIT_FAILURE);
 		}
-
-    }
-
-	memcpy(&payload[ipayload],signature,l_iSignatureLength);
-	ipayload+=l_iSignatureLength;
-
 #endif//MXIM_HSM
+  }
+
+#ifndef _MXIM_HSM
+  for(i=0;i<config_struct.rsa_len;i++)
+    payload[ipayload++]=signature[i];
+#else
+  memcpy(&payload[ipayload],signature,l_iSignatureLength);
+  ipayload+=l_iSignatureLength;
+#endif//MXIM_HSM
+
   return(EXIT_SUCCESS);
 }
 
