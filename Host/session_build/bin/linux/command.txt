@@ -1,0 +1,12 @@
+
+# build command get from eclipse
+./buildSCP.sh ${BuildArtifactFileName}signed.bin ${BuildArtifactFileName}signed ${ProjDirPath}/${ConfigName}
+
+# when fully parse, this command can run from the terminal
+# note: need to add some more file to directory to be able to build
+# + maximtestcrk.key
+# + sb_script.txt
+# + binary.s19
+./session_build.exe session_mode=SCP_ANGELA_ECDSA verbose=no output_file=output/out pp=ECDSA addr_offset=00000000 chunk_size=4094 script_file=sb_script.txt ecdsa_file="maximtestcrk.key" > output/output.log
+
+LC_ALL=C  ls -1 *.packet >packet.list
