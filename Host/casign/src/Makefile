@@ -75,7 +75,7 @@ ifeq ($(TARGET),windows)
 else
  LFLAGS= -L ./ -Wl,-rpath=\$$ORIGIN
  LIBFLAGS:= -lucl
- EXTENSION:=
+ EXTENSION:=.exe
  UCL:=libucl.so.*
  CFLAGS=	-O2 -W -Wall -DWORD32 -m32
 endif

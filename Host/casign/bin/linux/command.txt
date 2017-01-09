@@ -1,0 +1,1 @@
+./ca_sign_build.exe algo=ecdsa ca="suribootloader.bin" sca="suribootloader.signed.bin" load_address=10000000 jump_address=10000020 arguments= version=01000003 application_version=01010000 verbose=yes > output/out.log
