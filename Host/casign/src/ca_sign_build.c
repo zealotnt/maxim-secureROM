@@ -540,6 +540,9 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
     int       l_iMsg3Length = sizeof(msg3);
 
     resu = g_objMXIMUCLLibrary.ECDSAVerifyP256r1Sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
+#elif _SAFENET_HSM
+    // TODO: do the KAT of Safenet HSM here
+
 #else
     resu = ucl_ecdsa_verify_p256r1_sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
 #endif
@@ -589,6 +592,9 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
         }
     }
 
+#elif _SAFENET_HSM
+    // TODO: Do the sign operation here
+
 #else
 
     for (i = 0; i < ECDSA_MODULUS_LEN; i++)
@@ -626,6 +632,9 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
         printf("ERROR on ECDSA sha256 verify (%d)\n", resu);
         return (EXIT_FAILURE);
     }
+
+#elif _SAFENET_HSM
+    // TODO: verify back be signature here
 
 #else //=> #ifndef _MXIM_HSM
 
@@ -2164,6 +2173,8 @@ int main(int argc, char **argv)
             _MXIM_NCIPHER_CA_SIGN_BUILD_APP_VER_Z,
             _MXIM_NCIPHER_CA_SIGN_BUILD_APP_VER_BUILD);
     printf("\n--warning: this tool does handle keys with Thales nCipher Edge HSM --\n");
+#elif _SAFENET_HSM
+    // TODO: Any infomation need to print ?
 
 #else
     printf( "CA signature build v%d.%d.%d (build %d) (c)Maxim Integrated 2006-2016\n",
@@ -2218,6 +2229,9 @@ int main(int argc, char **argv)
         return (EXIT_FAILURE);
     }
 
+#elif _SAFENET_HSM
+    // TODO: login and initialization to HSM
+
 #endif
 
 
@@ -2233,6 +2247,10 @@ int main(int argc, char **argv)
         {
             printf("Warning: fails to close HSM connection\n");
         }
+
+#elif _SAFENET_HSM
+    // TODO: close connection to Safenet HSM
+
 #endif
 
         return (EXIT_FAILURE);
@@ -2249,6 +2267,10 @@ int main(int argc, char **argv)
         printf("Warning: fails to close HSM connection\n");
 
     }
+
+#elif _SAFENET_HSM
+    // TODO: close connection to Safenet HSM
+
 #endif
 
 
