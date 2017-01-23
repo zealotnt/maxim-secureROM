@@ -393,7 +393,20 @@ char *source[2] = {"host", "bl"};
 
 
 
+#ifdef _SAFENET_HSM
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "cryptoki.h"
+#include "ctutil.h"
+
+CK_SESSION_HANDLE hSession = CK_INVALID_HANDLE;
+
+CK_OBJECT_HANDLE hPriKey = CK_INVALID_HANDLE;
+CK_OBJECT_HANDLE hPubKey = CK_INVALID_HANDLE;
+
+#endif
 
 char idf_ctl[MAX_IDF][MAX_STRING];
 int list_ctl[MAX_IDF];
@@ -2175,6 +2188,7 @@ int main(int argc, char **argv)
     printf("\n--warning: this tool does handle keys with Thales nCipher Edge HSM --\n");
 #elif _SAFENET_HSM
     // TODO: Any infomation need to print ?
+    mlsHsmPrintInfo();
 
 #else
     printf( "CA signature build v%d.%d.%d (build %d) (c)Maxim Integrated 2006-2016\n",
@@ -2231,6 +2245,11 @@ int main(int argc, char **argv)
 
 #elif _SAFENET_HSM
     // TODO: login and initialization to HSM
+    mlsHsmOpenConnection(3, &hSession);
+
+    mlsHsmGetKey(hSession, "1", &hPriKey, &hPubKey);
+
+    mlsGetECDSAPubkey(hSession, hPubKey);
 
 #endif
 
@@ -2250,7 +2269,7 @@ int main(int argc, char **argv)
 
 #elif _SAFENET_HSM
     // TODO: close connection to Safenet HSM
-
+        mlsHsmCloseConnection(hSession);
 #endif
 
         return (EXIT_FAILURE);
@@ -2270,7 +2289,7 @@ int main(int argc, char **argv)
 
 #elif _SAFENET_HSM
     // TODO: close connection to Safenet HSM
-
+    mlsHsmCloseConnection(hSession);
 #endif
 
 

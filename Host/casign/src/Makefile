@@ -54,9 +54,10 @@ else
 endif
 endif
 
+HSM_CPROVDIR=/opt/safenet/protecttoolkit5/ptk
 
 CFLAGS=	-O2 -DWORD32 -W -Wall
-IFLAGS= -I../include
+IFLAGS= -I../include -I$(HSM_CPROVDIR)/include
 DIST=../bin/$(TARGET)
 HOST_LIB=../../customer_scripts/lib
 USR_LOCAL_LIB=/usr/local/lib
@@ -73,15 +74,16 @@ ifeq ($(TARGET),windows)
  EXTENSION:=.exe
  UCL:= libucl.dll
 else
- LFLAGS= -L ./ -Wl,-rpath=\$$ORIGIN
- LIBFLAGS:= -lucl
+ LFLAGS= -L$(HSM_CPROVDIR)/lib -L./ -Wl,-rpath=\$$ORIGIN
+ LIBFLAGS:= -lucl -lctutil -lctextra -lutil -lcryptoki
  EXTENSION:=.exe
  UCL:=libucl.so.*
- CFLAGS=	-O2 -W -Wall -DWORD32 -m32
+ CFLAGS= -O2 -W -Wall -DWORD32 -m32 -D_SAFENET_HSM
+ CFLAGS+= -fPIC -DLINUX -DIS_LITTLE_ENDIAN -DHAS_STRSIGNAL -DNOIDENT -DHAVE_INTTYPES_H -DHAVE_SYSTYPES_H
 endif
 endif
 EXEC=	ca_sign_build$(EXTENSION)
-OBJ=	ca_sign_build.o
+OBJ=	ca_sign_build.o mlsHsmInjection.o
 
 #
 # Rules
@@ -116,7 +118,7 @@ install: ;
 	$(CC) $(CFLAGS) $(IFLAGS) -c -o $@ $<
 
 ca_sign_build$(EXTENSION):	$(OBJ)
-	$(CC) $(CFLAGS) $(IFLAGS)  $(LFLAGS) -o $(DIST)/$(EXEC) $(OBJ) $(LIBFLAGS)
+	$(CC) $(IFLAGS) $(CFLAGS) $(LFLAGS) -o $(DIST)/$(EXEC) $(OBJ) $(LIBFLAGS)
 	cp $(UCL) $(DIST)/
 #move executable to directory where it is called from by scripts
 #	cp $(DIST)/$(EXEC) $(HOST_LIB)/
