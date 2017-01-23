@@ -253,7 +253,7 @@ int mlsECDSAVerifyP256r1Sha256(CK_SESSION_HANDLE hSession,
         CHECK_P11_ERROR(rv);
     }
 
-    return CKR_OK;
+    return rv;
 }
 
 int mlsECDSASignP256r1Sha256(CK_SESSION_HANDLE hSession,

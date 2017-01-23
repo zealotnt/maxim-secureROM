@@ -555,7 +555,11 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
     resu = g_objMXIMUCLLibrary.ECDSAVerifyP256r1Sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
 #elif _SAFENET_HSM
     // TODO: do the KAT of Safenet HSM here
+    u8* sig_combined;
+    CK_SIZE sig_size;
 
+    mlsECDSASignP256r1Sha256(hSession, hPriKey, msg3, sizeof(msg3), &sig_combined, &sig_size);
+    resu = mlsECDSAVerifyP256r1Sha256(hSession, hPubKey, msg3, sizeof(msg3), sig_combined, sig_size);
 #else
     resu = ucl_ecdsa_verify_p256r1_sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
 #endif
@@ -572,7 +576,7 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
             printf("KAT ECDSA-P256r1-SHA256 SIGNATURE VERIFICATION TEST-1 NOK %d \n", resu);
         }
     }
-
+    return 0;
 #ifdef _MXIM_HSM
 
     memset(l_tucSignature, 0, _MXIM_ECDSA_SIGNATURE_LEN);
@@ -1163,11 +1167,12 @@ int read_binary_file( u8*   p_pucData, int* size, char* filename)
     if (TRUE == verbose)
     {
         printf("%d bytes read\n", *size);
-
+#if (DUMP_DATA)
         for (i = 0; i < (int)(*size); i++)
             printf("%02x", p_pucData[i]);
 
         printf("\n");
+#endif
     }
 
     fclose(pFile);
