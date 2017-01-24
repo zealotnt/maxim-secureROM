@@ -576,7 +576,7 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
             printf("KAT ECDSA-P256r1-SHA256 SIGNATURE VERIFICATION TEST-1 NOK %d \n", resu);
         }
     }
-    return 0;
+
 #ifdef _MXIM_HSM
 
     memset(l_tucSignature, 0, _MXIM_ECDSA_SIGNATURE_LEN);
@@ -611,6 +611,7 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
 
 #elif _SAFENET_HSM
     // TODO: Do the sign operation here
+    mlsECDSASignP256r1Sha256(hSession, hPriKey, payload, payload_len, &sig_combined, &sig_size);
 
 #else
 
@@ -652,6 +653,7 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
 
 #elif _SAFENET_HSM
     // TODO: verify back be signature here
+    resu = mlsECDSAVerifyP256r1Sha256(hSession, hPubKey, payload, payload_len, sig_combined, sig_size);
 
 #else //=> #ifndef _MXIM_HSM
 
@@ -677,10 +679,10 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
     if (TRUE == verbose)
     {
         printf("payload(%d):", payload_len);
-
+#if (DUMP_DATA)
         for (i = 0; i < (int)payload_len; i++)
             printf("%02x", payload[i]);
-
+#endif
         printf("\n");
         printf("r3:");
 
@@ -741,11 +743,11 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
 
     if (TRUE == verbose)
     {
-        printf("payload+signature:");
-
+        printf("payload+signature: (%d bytes)", payload_len);
+#if (DUMP_DATA)
         for (i = 0; i < (int)payload_len; i++)
             printf("%02x", payload[i]);
-
+#endif
         printf("\n");
 
         for (i = 0; i < (int)ECDSA_MODULUS_LEN * 2; i++)
@@ -2254,7 +2256,7 @@ int main(int argc, char **argv)
 
     mlsHsmGetKey(hSession, "1", &hPriKey, &hPubKey);
 
-    mlsGetECDSAPubkey(hSession, hPubKey);
+    // mlsGetECDSAPubkey(hSession, hPubKey);
 
 #endif
 
