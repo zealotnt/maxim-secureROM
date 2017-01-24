@@ -37,27 +37,29 @@
 #makefile for cygwin target
 #possible targets: linux, cygwin
 ifndef TARGET
-TARGET=cygwin
+TARGET=linux
+endif
+
+ifndef KEY_ENV
+KEY_ENV=HSM
 endif
 
 ifeq ($(TARGET),cygwin)
-#back to gcc
-# CC=	i686-pc-cygwin-gcc
-	CC=gcc
-else 
-ifeq ($(TARGET),windows)
-
-CC=x86_64-w64-mingw32-gcc
-else
-
- CC=	gcc
-endif
+ #back to gcc
+ # CC=	i686-pc-cygwin-gcc
+ CC=gcc
+ else
+  ifeq ($(TARGET),windows)
+   CC=x86_64-w64-mingw32-gcc
+  else
+   CC=	gcc
+  endif
 endif
 
 HSM_CPROVDIR=/opt/safenet/protecttoolkit5/ptk
 
 CFLAGS=	-O2 -DWORD32 -W -Wall
-IFLAGS= -I../include -I$(HSM_CPROVDIR)/include
+IFLAGS= -I../include
 DIST=../bin/$(TARGET)
 HOST_LIB=../../customer_scripts/lib
 USR_LOCAL_LIB=/usr/local/lib
@@ -68,22 +70,31 @@ ifeq ($(TARGET),cygwin)
  EXTENSION:=.exe
  UCL:= libucl.dll
 else
-ifeq ($(TARGET),windows)
- LFLAGS= -L ./
- LIBFLAGS:= libucl.dll
- EXTENSION:=.exe
- UCL:= libucl.dll
-else
- LFLAGS= -L$(HSM_CPROVDIR)/lib -L./ -Wl,-rpath=\$$ORIGIN
- LIBFLAGS:= -lucl -lctutil -lctextra -lutil -lcryptoki
- EXTENSION:=.exe
- UCL:=libucl.so.*
- CFLAGS= -O2 -W -Wall -DWORD32 -m32 -D_SAFENET_HSM
- CFLAGS+= -fPIC -DLINUX -DIS_LITTLE_ENDIAN -DHAS_STRSIGNAL -DNOIDENT -DHAVE_INTTYPES_H -DHAVE_SYSTYPES_H
-endif
+ ifeq ($(TARGET),windows)
+  LFLAGS= -L ./
+  LIBFLAGS:= libucl.dll
+  EXTENSION:=.exe
+  UCL:= libucl.dll
+ else
+  LFLAGS= -L./ -Wl,-rpath=\$$ORIGIN
+  LIBFLAGS:= -lucl
+  EXTENSION:=.exe
+  UCL:=libucl.so.*
+  CFLAGS= -O2 -W -Wall -DWORD32 -m32
+ endif
 endif
 EXEC=	ca_sign_build$(EXTENSION)
-OBJ=	ca_sign_build.o mlsHsmInjection.o
+OBJ=	ca_sign_build.o
+
+ifeq ($(KEY_ENV),HSM)
+ HSM_CPROVDIR=/opt/safenet/protecttoolkit5/ptk
+
+ IFLAGS+= -I$(HSM_CPROVDIR)/include
+ LFLAGS+= -L$(HSM_CPROVDIR)/lib
+ CFLAGS+= -D_SAFENET_HSM -fPIC -DLINUX -DIS_LITTLE_ENDIAN -DHAS_STRSIGNAL -DNOIDENT -DHAVE_INTTYPES_H -DHAVE_SYSTYPES_H
+ LIBFLAGS+= -lctutil -lctextra -lutil -lcryptoki
+ OBJ+= mlsHsmInjection.o
+endif
 
 #
 # Rules

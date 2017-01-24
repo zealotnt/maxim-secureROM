@@ -37,7 +37,11 @@
 #makefile for cygwin target
 #possible targets: linux, cygwin
 ifndef TARGET
-TARGET=cygwin
+TARGET=linux
+endif
+
+ifndef KEY_ENV
+KEY_ENV=HSM
 endif
 
 CC=	gcc
@@ -65,6 +69,16 @@ endif
 
 EXEC=	session_build$(EXTENSION)
 OBJ=	session_build.o
+
+ifeq ($(KEY_ENV),HSM)
+ HSM_CPROVDIR=/opt/safenet/protecttoolkit5/ptk
+
+ IFLAGS+= -I$(HSM_CPROVDIR)/include
+ LFLAGS+= -L$(HSM_CPROVDIR)/lib
+ CFLAGS+= -D_SAFENET_HSM -fPIC -DLINUX -DIS_LITTLE_ENDIAN -DHAS_STRSIGNAL -DNOIDENT -DHAVE_INTTYPES_H -DHAVE_SYSTYPES_H
+ LIBFLAGS+= -lctutil -lctextra -lutil -lcryptoki
+ OBJ+= mlsHsmInjection.o
+endif
 
 #
 # Rules
@@ -102,6 +116,6 @@ session_build$(EXTENSION):	$(OBJ)
 	$(CC) $(CFLAGS) $(IFLAGS)  $(LFLAGS) -o $(DIST)/$(EXEC) $(OBJ) $(LIBFLAGS)
 	cp $(UCL) $(DIST)/
 #move executable to directory where it is called from by scripts
-	cp $(DIST)/$(EXEC) $(HOST_LIB)/
-	cp $(DIST)/$(UCL) $(HOST_LIB)/
+	# cp $(DIST)/$(EXEC) $(HOST_LIB)/
+	# cp $(DIST)/$(UCL) $(HOST_LIB)/
 # End Of Makefile

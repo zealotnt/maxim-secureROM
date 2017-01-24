@@ -185,6 +185,21 @@ extern "C"
 
 #define TM_INFO(...)      printf("[INFO] " __VA_ARGS__)
 
+#ifdef _SAFENET_HSM
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "cryptoki.h"
+#include "ctutil.h"
+
+CK_SESSION_HANDLE hSession = CK_INVALID_HANDLE;
+
+CK_OBJECT_HANDLE hPriKey = CK_INVALID_HANDLE;
+CK_OBJECT_HANDLE hPubKey = CK_INVALID_HANDLE;
+
+#endif
+
 int test_hex(char c1, char c2)
 {
 	int value;
@@ -517,10 +532,22 @@ int ecdsa_sign_payload(void)
 	int l_iSignatureLength = UCL_RSA_KEY_MAXSIZE;
 	unsigned long l_ulAttributeKeyType = CKA_LABEL;
 	unsigned long l_ulHSMLabelKeyLength = strlen(g_tcHSMECDSALabelKey);
+#elif _SAFENET_HSM
+    u8* sig_combined = NULL;
+    CK_SIZE sig_size;
 #endif
 
 #ifdef _MXIM_HSM
 	resu = g_objMXIMUCLLibrary.ECDSAVerifyP256r1Sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
+
+#elif _SAFENET_HSM
+    mlsECDSASignP256r1Sha256(hSession, hPriKey, msg3, sizeof(msg3), &sig_combined, &sig_size);
+    resu = mlsECDSAVerifyP256r1Sha256(hSession, hPubKey, msg3, sizeof(msg3), sig_combined, sig_size);
+    if (sig_combined)
+    {
+    	free(sig_combined);
+    }
+
 #else
 	resu = ucl_ecdsa_verify_p256r1_sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
 #endif
@@ -550,8 +577,8 @@ int ecdsa_sign_payload(void)
 	}
 	else
 		return (EXIT_FAILURE);
-#ifdef _MXIM_HSM
 
+#ifdef _MXIM_HSM
 	resu = MXIMHSMSHA256ECDSASign(  &g_objMXHSMCLI,
 	                                &g_objMXIMUCLLibrary,
 	                                (PUCHAR)input,
@@ -578,8 +605,25 @@ int ecdsa_sign_payload(void)
 		}
 	}
 
+#elif _SAFENET_HSM
+    // TODO: Do the sign operation here
+    sig_combined = NULL;
+    mlsECDSASignP256r1Sha256(hSession, hPriKey, input, inputsize, &sig_combined, &sig_size);
+	for (i = 0; i < 64; i++)
+	{
+		if (i < 32)
+		{
+			r3[i] = sig_combined[i];
+		}
+		else
+		{
+			s3[i - 32] = sig_combined[i];
+		}
+	}
+
 #else
 	resu = ucl_ecdsa_sign_p256r1_sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, d3, input, inputsize);
+
 #endif
 
 	if (resu != UCL_OK)
@@ -587,6 +631,7 @@ int ecdsa_sign_payload(void)
 		printf("ECDSA-P256r1-SHA256 SIGNATURE COMPUTATION TEST-1 NOK %d \n", resu);
 		exit(0);
 	}
+
 #ifdef _MXIM_HSM
 
 	resu = MXIMHSMSHA256ECDSAVerify(  &g_objMXHSMCLI,
@@ -603,9 +648,20 @@ int ecdsa_sign_payload(void)
 		printf("ERROR on ECDSA sha256 verify (%d)\n", resu);
 		return (EXIT_FAILURE);
 	}
+
+#elif _SAFENET_HSM
+    // TODO: verify back be signature here
+    resu = mlsECDSAVerifyP256r1Sha256(hSession, hPubKey, input, inputsize, sig_combined, sig_size);
+    if (sig_combined)
+    {
+    	free(sig_combined);
+    }
+
 #else
 	resu = ucl_ecdsa_verify_p256r1_sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, input, inputsize);
+
 #endif
+
 	if (resu != UCL_OK)
 	{
 		printf("ECDSA-P256r1-SHA256 SIGNATURE VERIFICATION TEST-1 NOK %d \n", resu);
@@ -5885,13 +5941,15 @@ int process_script(void)
 			case COMMAND_WRITE_FILE:
 				if (1 == nb_params)
 				{
+					TM_INFO("Entry COMMAND_WRITE_FILE\r\n");
 					if (EXIT_SUCCESS != write_file(params[0], NULL))
 					{
 						printf("ERROR: write-file\n");
 						return (EXIT_FAILURE);
 					}
+					TM_INFO("End COMMAND_WRITE_FILE\r\n");
 				}
-				else if (1 == nb_params)
+				else if (2 == nb_params)
 				{
 					if (EXIT_SUCCESS != write_file(params[0], params[1]))
 					{
@@ -7401,6 +7459,10 @@ int main(int argc, char **argv)
 	memset(g_tcQuorum_N, 0, _MXIM_MAX_STRING);
 	printf( "SBL/SCP packets builder v%d.%d.%d (build %d) (c)Maxim Integrated 2006-2014\n", MAJV, MINV, ZVER, BUILD);
 	printf("\n--warning: this tool handles keys in PCI PTS compliant way --\n");
+#elif _SAFENET_HSM
+    // TODO: Any infomation need to print ?
+    mlsHsmPrintInfo();
+
 #else
 	printf( "SBL/SCP packets builder v%d.%d.%d (build %d) (c)Maxim Integrated 2006-2014\n", MAJV, MINV, ZVER, BUILD);
 	printf("--warning: this tool does not handle keys in a PCI PTS compliant way --\n");
@@ -7452,10 +7514,19 @@ int main(int argc, char **argv)
 
 		return (EXIT_FAILURE);
 	}
+#elif _SAFENET_HSM
+    // TODO: login and initialization to HSM
+    mlsHsmOpenConnection(3, &hSession);
+
+    mlsHsmGetKey(hSession, "1", &hPriKey, &hPubKey);
+
+    // mlsGetECDSAPubkey(hSession, hPubKey);
 
 #else
 	fprintf(fp, "UCL Version: %s (%s)", (char *)ucl_get_version(), (char *)ucl_get_build_date());
+
 #endif//MXIM_HSM
+
 	resu = process();
 
 	(void)fclose(fp);
@@ -7470,6 +7541,10 @@ int main(int argc, char **argv)
 		{
 			printf("Warning: fails to close HSM connection\n");
 		}
+#elif _SAFENET_HSM
+	    // TODO: close connection to Safenet HSM
+        mlsHsmCloseConnection(hSession);
+
 #endif//MXIM_HSM
 		return (EXIT_FAILURE);
 	}
@@ -7482,6 +7557,11 @@ int main(int argc, char **argv)
 	{
 		printf("Warning: fails to close HSM connection\n");
 	}
+
+#elif _SAFENET_HSM
+    // TODO: close connection to Safenet HSM
+    mlsHsmCloseConnection(hSession);
+
 #endif//MXIM_HSM
 
 	return (EXIT_SUCCESS);
