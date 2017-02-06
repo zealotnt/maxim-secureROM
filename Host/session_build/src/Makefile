@@ -74,9 +74,19 @@ ifeq ($(KEY_ENV),HSM)
  HSM_CPROVDIR=/opt/safenet/protecttoolkit5/ptk
 
  IFLAGS+= -I$(HSM_CPROVDIR)/include
- LFLAGS+= -L$(HSM_CPROVDIR)/lib
+
+ # if using net hsm mode
+ LFLAGS+= -L$(HSM_CPROVDIR)/lib/linux-i386
+ # if using software only
+ # LFLAGS+= -L$(HSM_CPROVDIR)/lib
+
  CFLAGS+= -D_SAFENET_HSM -fPIC -DLINUX -DIS_LITTLE_ENDIAN -DHAS_STRSIGNAL -DNOIDENT -DHAVE_INTTYPES_H -DHAVE_SYSTYPES_H
- LIBFLAGS+= -lctutil -lctextra -lutil -lcryptoki
+
+ # if using net hsm mode
+ LIBFLAGS+= -lctutil -lctextra -lutil -lcryptoki -lethsm
+ # if using software only
+ # LIBFLAGS+= -lctutil -lctextra -lutil -lcryptoki
+
  OBJ+= mlsHsmInjection.o
 endif
 

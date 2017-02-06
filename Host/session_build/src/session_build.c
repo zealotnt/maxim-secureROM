@@ -848,7 +848,7 @@ int display_bin(void)
 	return (EXIT_SUCCESS);
 }
 
-void send(void)
+void maxim_send(void)
 {
 	compteur++;
 	display_frame();
@@ -1260,7 +1260,7 @@ int connection_request(void)
 	add_channel_id_seq();
 	header_crc();
 	sprintf(name_file, "connection_request");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1276,7 +1276,7 @@ int connection_reply(void)
 	add_channel_id_seq();
 	header_crc();
 	sprintf(name_file, "connection_reply");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1293,7 +1293,7 @@ int disconnection_request(void)
 	add_channel_id_seq();
 	header_crc();
 	sprintf(name_file, "disconnection_request");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1309,7 +1309,7 @@ int disconnection_reply(void)
 	add_channel_id_seq();
 	header_crc();
 	sprintf(name_file, "disconnection_reply");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1330,7 +1330,7 @@ int ack(void)
 	add_channel_id_seq();
 	header_crc();
 	sprintf(name_file, "ack");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1603,7 +1603,7 @@ int hello_request(void)
 	add_payload();
 	payload_crc();
 	sprintf(name_file, "hello_request");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1622,7 +1622,7 @@ int hello_reply(void)
 	add_payload();
 	payload_crc();
 	sprintf(name_file, "hello_reply");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1703,7 +1703,7 @@ int challenge(void)
 	add_payload();
 	payload_crc();
 	sprintf(name_file, "challenge");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -1731,7 +1731,7 @@ int challenge_response(void)
 	add_payload();
 	payload_crc();
 	sprintf(name_file, "challenge_response");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2058,7 +2058,7 @@ int read_configuration(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "read_configuration");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2121,7 +2121,7 @@ int mem_mapping(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "mem_mapping");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2179,7 +2179,7 @@ int generic_response(char *msg)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "%s", msg);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2247,7 +2247,7 @@ int read_configuration_response(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "read_config_response");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2316,7 +2316,7 @@ int mem_mapping_response(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "mem_mapping_response");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2392,7 +2392,7 @@ int aes_comp_response(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "aes_comp_response");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2669,7 +2669,7 @@ int del_mem(char *sfilename, char *ptr_address_offset)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "del_mem");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2741,7 +2741,7 @@ int del_data(char *sstart_addr, char *slength)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "del_data");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2814,7 +2814,7 @@ int write_bpk_blpk(char *bpk_char)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_blpk");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2886,7 +2886,7 @@ int write_bpk_fak(char *fak_char)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_fak");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -2981,7 +2981,7 @@ int write_timeout(char timeout_target_char, char *timeout_char)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_timeout");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3049,7 +3049,7 @@ int kill_chip(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "kill_chip");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3146,7 +3146,7 @@ int write_bpk(char *offset_char, char *data_char)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_bpk");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3238,7 +3238,7 @@ int execute_code(char *address)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "execute_code");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3335,7 +3335,7 @@ int write_otp(char *offset_char, char *data_char)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_otp");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3844,7 +3844,7 @@ int write_crk(char *signaturefile)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_crk");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3892,7 +3892,7 @@ int rewrite_crk(char *oldsignaturefile, char *newsignaturefile)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "rewrite_crk");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -3958,7 +3958,7 @@ int aes_comp(void)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "aes_comp");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4044,7 +4044,7 @@ int write_mem(u8 *data, int data_len, int data_addr)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "write_mem");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4325,7 +4325,7 @@ int verify_data(u8 *data, int data_len, int data_addr)
 	//finally add payload crc
 	payload_crc();
 	sprintf(name_file, "verify_data");
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4563,7 +4563,7 @@ void engage_pllo_response(void)
 	sprintf(name_file, "engage_pllo_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_ENGAGE_PLLO]);
-	send();
+	maxim_send();
 }
 
 void engage_pllo_payload(void)
@@ -4595,7 +4595,7 @@ int engage_pllo(void)
 	sprintf(name_file, "engage_pllo");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_ENGAGE_PLLO]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4605,7 +4605,7 @@ void load_customer_key_response(void)
 	sprintf(name_file, "load_customer_key_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_LOAD_CUSTOMER_KEY]);
-	send();
+	maxim_send();
 }
 
 int load_customer_key_payload(char *pub_x, char *pub_y)
@@ -4666,7 +4666,7 @@ int load_customer_key(char *pub_x, char *pub_y)
 	sprintf(name_file, "load_customer_key");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_LOAD_CUSTOMER_KEY]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4676,7 +4676,7 @@ void verify_customer_key_response(void)
 	sprintf(name_file, "verify_customer_key_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_CUSTOMER_KEY]);
-	send();
+	maxim_send();
 }
 
 //3.5.0
@@ -4763,7 +4763,7 @@ int verify_customer_key(char *pub_x, char *pub_y)
 	sprintf(name_file, "verify_customer_key");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_CUSTOMER_KEY]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4773,7 +4773,7 @@ void activate_customer_key_response(void)
 	sprintf(name_file, "activate_customer_key_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_ACTIVATE_CUSTOMER_KEY]);
-	send();
+	maxim_send();
 }
 
 int activate_customer_key(void)
@@ -4797,7 +4797,7 @@ int activate_customer_key(void)
 	sprintf(name_file, "activate_customer_key");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_ACTIVATE_CUSTOMER_KEY]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4807,7 +4807,7 @@ void generate_application_startup_signature_response(void)
 	sprintf(name_file, "generate_application_startup_signature_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_GENERATE_APPLICATION_STARTUP_SIGNATURE]);
-	send();
+	maxim_send();
 }
 
 int generate_application_startup_signature(void)
@@ -4831,7 +4831,7 @@ int generate_application_startup_signature(void)
 	sprintf(name_file, "generate_application_startup_signature");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_GENERATE_APPLICATION_STARTUP_SIGNATURE]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4841,7 +4841,7 @@ void verify_application_startup_signature_response(void)
 	sprintf(name_file, "verify_application_startup_signature_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_APPLICATION_STARTUP_SIGNATURE]);
-	send();
+	maxim_send();
 }
 
 int verify_application_startup_signature(void)
@@ -4865,7 +4865,7 @@ int verify_application_startup_signature(void)
 	sprintf(name_file, "verify_application_startup_signature");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_APPLICATION_STARTUP_SIGNATURE]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4875,7 +4875,7 @@ void write_register_response(void)
 	sprintf(name_file, "write_register_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_WRITE_REGISTER]);
-	send();
+	maxim_send();
 }
 int write_register_payload(char *reg, char *value)
 {
@@ -4924,7 +4924,7 @@ int write_register(char *reg, char *value)
 	sprintf(name_file, "write_register");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_WRITE_REGISTER]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -4934,7 +4934,7 @@ void read_register_response(void)
 	sprintf(name_file, "read_register_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_READ_REGISTER]);
-	send();
+	maxim_send();
 }
 int read_register_payload(char *reg)
 {
@@ -4974,7 +4974,7 @@ int read_register(char *reg)
 	sprintf(name_file, "read_register");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_READ_REGISTER]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 void load_code_response(void)
@@ -4983,7 +4983,7 @@ void load_code_response(void)
 	sprintf(name_file, "load_code_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_LOAD_CODE]);
-	send();
+	maxim_send();
 }
 
 int load_code_payload(char *addr, char *code)
@@ -5033,7 +5033,7 @@ int load_code(char *addr, char *code)
 	sprintf(name_file, "load_code");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_LOAD_CODE]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -5120,7 +5120,7 @@ void verify_code_response(void)
 	sprintf(name_file, "verify_code_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_CODE]);
-	send();
+	maxim_send();
 }
 int verify_code_payload(char *addr, char *code)
 {
@@ -5169,7 +5169,7 @@ int verify_code(char *addr, char *code)
 	sprintf(name_file, "verify_code");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_CODE]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -5254,7 +5254,7 @@ void load_data_response(void)
 	sprintf(name_file, "load_data_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_LOAD_DATA]);
-	send();
+	maxim_send();
 }
 int load_data_payload(char *addr, char *data)
 {
@@ -5303,7 +5303,7 @@ int load_data(char *addr, char *data)
 	sprintf(name_file, "load_data");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_LOAD_DATA]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -5313,7 +5313,7 @@ void verify_maxq1852_data_response(void)
 	sprintf(name_file, "verify_data_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_DATA]);
-	send();
+	maxim_send();
 }
 int verify_maxq1852_data_payload(char *addr, char *data)
 {
@@ -5362,7 +5362,7 @@ int verify_maxq1852_data(char *addr, char *data)
 	sprintf(name_file, "verify_data");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_VERIFY_DATA]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -5372,7 +5372,7 @@ void erase_code_flash_area_response(void)
 	sprintf(name_file, "erase_code_flash_area_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_ERASE_CODE_FLASH_AREA]);
-	send();
+	maxim_send();
 }
 int erase_code_flash_area(void)
 {
@@ -5395,7 +5395,7 @@ int erase_code_flash_area(void)
 	sprintf(name_file, "erase_code_flash_area");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_ERASE_CODE_FLASH_AREA]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -5405,7 +5405,7 @@ void erase_all_flash_areas_response(void)
 	sprintf(name_file, "erase_all_flash_areas_response");
 	add_payload();
 	sprintf(message, "%s-response", idf_scp_cmd[COMMAND_MAXQ1852_ERASE_ALL_FLASH_AREAS]);
-	send();
+	maxim_send();
 }
 int erase_all_flash_areas(void)
 {
@@ -5429,7 +5429,7 @@ int erase_all_flash_areas(void)
 	sprintf(name_file, "erase_all_flash_areas");
 	add_payload();
 	sprintf(message, "%s", idf_scp_cmd[COMMAND_MAXQ1852_ERASE_ALL_FLASH_AREAS]);
-	send();
+	maxim_send();
 	return (EXIT_SUCCESS);
 }
 
@@ -7443,6 +7443,14 @@ int process(void)
 	return (resu);
 }
 
+#define MLS_HSM_SLOT_NUM_ENV "HSM_SLOT_NUM"
+#define MLS_HSM_USER_PIN_ENV "HSM_USER_PIN"
+#define MLS_HSM_KEY_NAME_ENV "HSM_KEY_NAME"
+
+#define HSM_DEFAULT_KEY_NAME "maxim_ecdsa"
+#define HSM_DEFAULT_USER_PIN "5678"
+#define HSM_DEFAULT_SLOT_NUM 5
+
 int main(int argc, char **argv)
 {
 	int resu;
@@ -7515,10 +7523,40 @@ int main(int argc, char **argv)
 		return (EXIT_FAILURE);
 	}
 #elif _SAFENET_HSM
-    // TODO: login and initialization to HSM
-    mlsHsmOpenConnection(3, &hSession);
+    // char *key_name;
+    // char *usr_pin;
+    // char *slot_num_chr;
+    // int slot_num;
 
-    mlsHsmGetKey(hSession, "1", &hPriKey, &hPubKey);
+    // key_name = getenv(MLS_HSM_KEY_NAME_ENV);
+    // if (key_name == NULL)
+    // {
+    //     key_name = HSM_DEFAULT_KEY_NAME;
+    // }
+
+    // usr_pin = getenv(MLS_HSM_USER_PIN_ENV);
+    // if (usr_pin == NULL)
+    // {
+    //     usr_pin = HSM_DEFAULT_USER_PIN;
+    // }
+
+    // slot_num_chr = getenv(MLS_HSM_SLOT_NUM_ENV);
+    // if (slot_num_chr != NULL)
+    // {
+    //     slot_num = atoi(slot_num_chr);
+    // }
+    // else
+    // {
+    //     slot_num = HSM_DEFAULT_SLOT_NUM;
+    // }
+    // // TODO: login and initialization to HSM
+    // mlsHsmOpenConnection(slot_num, &hSession, usr_pin);
+
+    // mlsHsmGetKey(hSession, key_name, &hPriKey, &hPubKey);
+
+    mlsHsmOpenConnection(5, &hSession, "5678");
+
+    mlsHsmGetKey(hSession, "maxim_ecdsa", &hPriKey, &hPubKey);
 
     // mlsGetECDSAPubkey(hSession, hPubKey);
 

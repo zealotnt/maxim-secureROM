@@ -1,3 +1,6 @@
+# Set environment variables
+source /opt/safenet/protecttoolkit5/ptk/setvars.sh
+export ET_HSM_NETCLIENT_SERVERLIST=192.168.9.29:12396
 
 # build command get from eclipse
 ./buildSCP.sh ${BuildArtifactFileName}signed.bin ${BuildArtifactFileName}signed ${ProjDirPath}/${ConfigName}
