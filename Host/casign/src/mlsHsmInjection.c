@@ -182,10 +182,12 @@ void mlsHsmPrintInfo()
     return;
 }
 
-int mlsHsmOpenConnection(CK_BYTE slotId, CK_SESSION_HANDLE* pSession)
+int mlsHsmOpenConnection(CK_BYTE slotId, CK_SESSION_HANDLE* pSession, CK_CHAR* pUserPin)
 {
     CK_RV rv = CKR_OK;
+    CK_COUNT userPinLen;
 
+    printf("mlsHsmOpenConnection(): slotId=%d\r\n", slotId);
     rv = C_Initialize(NULL);
     CHECK_P11_ERROR(rv);
 
@@ -194,6 +196,10 @@ int mlsHsmOpenConnection(CK_BYTE slotId, CK_SESSION_HANDLE* pSession)
                        NULL,
                        NULL,
                        pSession);
+    CHECK_P11_ERROR(rv);
+
+    userPinLen = (CK_COUNT)strlen((char *)pUserPin);
+    rv = C_Login(*pSession, CKU_USER, pUserPin, userPinLen);
     CHECK_P11_ERROR(rv);
 
     return CKR_OK;

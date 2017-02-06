@@ -39,7 +39,7 @@ extern "C"
 /********** Function declaration section **************************************/
 void mlsHsmPrintInfo();
 
-int mlsHsmOpenConnection(CK_BYTE slotId, CK_SESSION_HANDLE* pSession);
+int mlsHsmOpenConnection(CK_BYTE slotId, CK_SESSION_HANDLE* pSession, CK_CHAR* pUserPin);
 
 int mlsHsmCloseConnection(CK_SESSION_HANDLE hSession);
 

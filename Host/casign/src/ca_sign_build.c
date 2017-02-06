@@ -2170,6 +2170,14 @@ int init()
     return err;
 }
 
+#define MLS_HSM_SLOT_NUM_ENV "HSM_SLOT_NUM"
+#define MLS_HSM_USER_PIN_ENV "HSM_USER_PIN"
+#define MLS_HSM_KEY_NAME_ENV "HSM_KEY_NAME"
+
+#define HSM_DEFAULT_KEY_NAME "maxim_ecdsa"
+#define HSM_DEFAULT_USER_PIN "5678"
+#define HSM_DEFAULT_SLOT_NUM 5
+
 int main(int argc, char **argv)
 {
     int resu;
@@ -2251,10 +2259,36 @@ int main(int argc, char **argv)
     }
 
 #elif _SAFENET_HSM
-    // TODO: login and initialization to HSM
-    mlsHsmOpenConnection(3, &hSession);
+    char *key_name;
+    char *usr_pin;
+    char *slot_num_chr;
+    int slot_num;
 
-    mlsHsmGetKey(hSession, "1", &hPriKey, &hPubKey);
+    key_name = getenv(MLS_HSM_KEY_NAME_ENV);
+    if (key_name == NULL)
+    {
+        key_name = HSM_DEFAULT_KEY_NAME;
+    }
+
+    usr_pin = getenv(MLS_HSM_USER_PIN_ENV);
+    if (usr_pin == NULL)
+    {
+        usr_pin = HSM_DEFAULT_USER_PIN;
+    }
+
+    slot_num_chr = getenv(MLS_HSM_SLOT_NUM_ENV);
+    if (slot_num_chr != NULL)
+    {
+        slot_num = atoi(slot_num_chr);
+    }
+    else
+    {
+        slot_num = HSM_DEFAULT_SLOT_NUM;
+    }
+    // TODO: login and initialization to HSM
+    mlsHsmOpenConnection(slot_num, &hSession, usr_pin);
+
+    mlsHsmGetKey(hSession, key_name, &hPriKey, &hPubKey);
 
     // mlsGetECDSAPubkey(hSession, hPubKey);
 
