@@ -10,11 +10,15 @@ cmdname=$(basename $0)
 . $DIR/Host/customer_scripts/scripts/colorCode.sh
 
 SURISCP_UPDATER=$DIR/Host/customer_scripts/lib/serial_sender/serial_sender.py
-SURISDK_UPDATER=$DIR/Host/surisdk-fw-upgrade/surisdk_lite_updater
+SURISDK_UPDATER_PC=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater
+SURISDK_UPDATER_BOARD=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater_board
 SURISCP_FIRST_TRY=100
 
+# This variable will be update later
+SURISDK_UPDATER=$SURISDK_UPDATER_PC
+
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
-SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl-lite
+SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl
 SURI_OTP_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms
 SURI_KEY_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk
 
