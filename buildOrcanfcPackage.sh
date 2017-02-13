@@ -19,13 +19,13 @@ check_yn_question()
 	done
 }
 
-if [ ! -d ../$TARGET_FOLDER ]; then
+if [ ! -d $DIR/../$TARGET_FOLDER ]; then
 	echo "Creating $TARGET_FOLDER folder"
 else
 	echo "$TARGET_FOLDER folder Already present, do you want to remove it ?"
 	check_yn_question "Do you want to remove that existing directory? [y/n]"
 	if [ $bResult == "y" ]; then
-		rm -rf $TARGET_FOLDER
+		rm -rf $DIR/../$TARGET_FOLDER
 	fi
 fi
 
@@ -53,6 +53,7 @@ cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk Host/custom
 cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/suribl Host/customer_scripts/scripts/buildSCP
 
 mkdir -p Host/surisdk-fw-upgrade
+cp -rp $DIR/Host/surisdk-fw-upgrade/svc Host/surisdk-fw-upgrade/svc
 cp -rp $DIR/Host/surisdk-fw-upgrade/orcanfc_updater Host/surisdk-fw-upgrade/orcanfc_updater
 cp -rp $DIR/Host/surisdk-fw-upgrade/orcanfc_board_updater Host/surisdk-fw-upgrade/orcanfc_board_updater
 

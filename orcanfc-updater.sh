@@ -9,20 +9,29 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cmdname=$(basename $0)
 . $DIR/Host/customer_scripts/scripts/colorCode.sh
 
+PACKAGE_SVC=$DIR/Host/surisdk-fw-upgrade/svc
+DEFAULT_SVC=/home/root/ischool/svc
+
 SURISCP_UPDATER=$DIR/Host/customer_scripts/lib/serial_sender/serial_sender.py
 SURISDK_UPDATER_PC=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater
-SURISDK_UPDATER_BOARD=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater_board
+SURISDK_UPDATER_BOARD=$DIR/Host/surisdk-fw-upgrade/orcanfc_board_updater
 SURISCP_FIRST_TRY=100
 
 # Detect environment, and use the updater accordingly
 IsBoard=`cat /proc/cpuinfo | grep "model name" | grep "ARM"`
 SURISDK_UPDATER=""
+SURISDK_BOARD_TOGGLE_RST=""
+MAXIM_RST_PIN="81"
+
 if [[ "$IsBoard" == "" ]];then
 	echo "Environment PC detected"
 	SURISDK_UPDATER=$SURISDK_UPDATER_PC
 else
 	echo "Environment Board detected"
 	SURISDK_UPDATER=$SURISDK_UPDATER_BOARD
+	SURISDK_BOARD_TOGGLE_RST=" --resetMaxim "
+	echo "Export Maxim RESET Pin"
+	echo $MAXIM_RST_PIN > /sys/class/gpio/export
 fi
 
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
@@ -77,7 +86,12 @@ UpdateFirmwareSCP()
 		retVal=1
 	fi
 
-	python $SURISCP_UPDATER -s $SERIAL_PORT -t 2 -v -f $SURISCP_FIRST_TRY -w packet.list
+	if [[ "$IsBoard" != "" ]]; then
+		echo "Killall pending svc to upgrade Maxim through SCP"
+		killall svc
+	fi
+
+	python $SURISCP_UPDATER -s $SERIAL_PORT -t 2 -v -f $SURISCP_FIRST_TRY -w packet.list $SURISDK_BOARD_TOGGLE_RST
 	scpRet=$?
 	case $scpRet in
 	0)
@@ -146,6 +160,21 @@ UpgradeSurisdk()
 {
 	echonoti "**************************************************"
 	echonoti "Update Maxim surisdk firmware, using $UPGRADE_FILE"
+
+	if [[ "$IsBoard" != "" ]]; then
+		killall svc
+		echo "Kill others svc and start another svc session"
+		echo "Set STYL_SVC_RF_CMD ENV_VAR to $SERIAL_PORT"
+		export STYL_SVC_RF_CMD=$SERIAL_PORT
+		if [[ -f "$PACKAGE_SVC" ]]; then
+			echo "Run default svc at $PACKAGE_SVC"
+			$PACKAGE_SVC &
+		else
+			echo "Run platform svc at $DEFAULT_SVC"
+			$DEFAULT_SVC &
+		fi
+	fi
+
 	$SURISDK_UPDATER $SERIAL_PORT $UPGRADE_FILE
 	retVal=$?
 	echonoti "**************************************************"
