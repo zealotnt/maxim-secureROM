@@ -4,6 +4,7 @@ Host/customer_scripts/scripts/buildSCP/*
 !Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms
 !Host/customer_scripts/scripts/buildSCP/eraser
 !Host/customer_scripts/scripts/buildSCP/suribl-lite
+!Host/customer_scripts/scripts/buildSCP/suribl
 Host/customer_scripts/scripts/buildSLA
 
 *.pyc
