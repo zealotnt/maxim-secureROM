@@ -19,13 +19,13 @@ check_yn_question()
 	done
 }
 
-if [ ! -d ../$TARGET_FOLDER ]; then
+if [ ! -d $DIR/../$TARGET_FOLDER ]; then
 	echo "Creating $TARGET_FOLDER folder"
 else
 	echo "$TARGET_FOLDER folder Already present, do you want to remove it ?"
 	check_yn_question "Do you want to remove that existing directory? [y/n]"
 	if [ $bResult == "y" ]; then
-		rm -rf $TARGET_FOLDER
+		rm -rf $DIR/../$TARGET_FOLDER
 	fi
 fi
 

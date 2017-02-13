@@ -9,6 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cmdname=$(basename $0)
 . $DIR/Host/customer_scripts/scripts/colorCode.sh
 
+# Updater/Application to update
 PACKAGE_SVC=$DIR/Host/surisdk-fw-upgrade/svc
 DEFAULT_SVC=/home/root/ischool/svc
 
@@ -23,27 +24,21 @@ SURISDK_UPDATER=""
 SURISDK_BOARD_TOGGLE_RST=""
 MAXIM_RST_PIN="81"
 
-if [[ "$IsBoard" == "" ]];then
-	echo "Environment PC detected"
-	SURISDK_UPDATER=$SURISDK_UPDATER_PC
-else
-	echo "Environment Board detected"
-	SURISDK_UPDATER=$SURISDK_UPDATER_BOARD
-	SURISDK_BOARD_TOGGLE_RST=" --resetMaxim "
-	echo "Export Maxim RESET Pin"
-	echo $MAXIM_RST_PIN > /sys/class/gpio/export
-fi
-
+# Places to find firmware
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
 SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl
 SURI_OTP_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms
 SURI_KEY_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk
 
+SCRIPT_NAME=`basename "$0"`
+SCRIPT_HDR="[$SCRIPT_NAME]"
+
 ##################################################################################################
 # function definition
 ##################################################################################################
-echoerr() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLRED}$@${KRESET}${ENDL}" 1>&2; fi }
-echonoti() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLGRN}$@${KRESET}" 1>&2; fi }
+echoinfo() { if [[ $QUIET -ne 1 ]]; then echo -e "$SCRIPT_HDR $@${KRESET}${ENDL}" 1>&2; fi }
+echoerr() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLRED}$SCRIPT_HDR $@${KRESET}${ENDL}" 1>&2; fi }
+echonoti() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLGRN}$SCRIPT_HDR $@${KRESET}" 1>&2; fi }
 
 usage()
 {
@@ -163,14 +158,14 @@ UpgradeSurisdk()
 
 	if [[ "$IsBoard" != "" ]]; then
 		killall svc
-		echo "Kill others svc and start another svc session"
-		echo "Set STYL_SVC_RF_CMD ENV_VAR to $SERIAL_PORT"
+		echoinfo "Kill others svc and start another svc session"
+		echoinfo "Set STYL_SVC_RF_CMD ENV_VAR to $SERIAL_PORT"
 		export STYL_SVC_RF_CMD=$SERIAL_PORT
 		if [[ -f "$PACKAGE_SVC" ]]; then
-			echo "Run default svc at $PACKAGE_SVC"
+			echoinfo "Run default svc at $PACKAGE_SVC"
 			$PACKAGE_SVC &
 		else
-			echo "Run platform svc at $DEFAULT_SVC"
+			echoinfo "Run platform svc at $DEFAULT_SVC"
 			$DEFAULT_SVC &
 		fi
 	fi
@@ -231,7 +226,7 @@ if [[ "$SERIAL_PORT" == "" ]]; then
 fi
 
 if [[ "$UPGRADE_TYPE" == "" ]]; then
-	echo "No upgrade firmware method specified, use upgrade 'ALL' as default"
+	echoinfo "No upgrade firmware method specified, use upgrade 'ALL' as default"
 	UPGRADE_TYPE="ALL"
 fi
 
@@ -244,6 +239,17 @@ if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "SURISDK" ]]; then
 fi
 
 CheckValidFileType $UPGRADE_TYPE "${UPGRADE_TYPE_LIST[@]}"
+
+if [[ "$IsBoard" == "" ]];then
+	echoinfo "Environment PC detected"
+	SURISDK_UPDATER=$SURISDK_UPDATER_PC
+else
+	echoinfo "Environment Board detected"
+	SURISDK_UPDATER=$SURISDK_UPDATER_BOARD
+	SURISDK_BOARD_TOGGLE_RST=" --resetMaxim "
+	echoinfo "Export Maxim RESET Pin"
+	echoinfo $MAXIM_RST_PIN > /sys/class/gpio/export
+fi
 
 if [[ "$UPGRADE_TYPE" == "ALL" ]]; then
 	LoadMaximKey
