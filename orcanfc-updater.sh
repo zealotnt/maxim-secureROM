@@ -14,8 +14,16 @@ SURISDK_UPDATER_PC=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater
 SURISDK_UPDATER_BOARD=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater_board
 SURISCP_FIRST_TRY=100
 
-# This variable will be update later
-SURISDK_UPDATER=$SURISDK_UPDATER_PC
+# Detect environment, and use the updater accordingly
+IsBoard=`cat /proc/cpuinfo | grep "model name" | grep "ARM"`
+SURISDK_UPDATER=""
+if [[ "$IsBoard" == "" ]];then
+	echo "Environment PC detected"
+	SURISDK_UPDATER=$SURISDK_UPDATER_PC
+else
+	echo "Environment Board detected"
+	SURISDK_UPDATER=$SURISDK_UPDATER_BOARD
+fi
 
 SURI_ERASER_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/eraser
 SURIBL_FW_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/suribl
