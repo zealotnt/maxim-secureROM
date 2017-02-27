@@ -4,3 +4,4 @@
 bin/linux/suribootloader.*
 bin/linux/libucl.*
 bin/linux/output/*
+bin/cygwin

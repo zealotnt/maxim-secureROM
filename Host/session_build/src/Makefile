@@ -95,7 +95,7 @@ endif
 #
 
 .PHONY:all
-all:	$(EXEC)
+all:	dist_folder $(EXEC)
 
 .PHONY:doc
 doc:
@@ -115,6 +115,8 @@ uninstall: clean
 .PHONY: install
 install: ;
 
+dist_folder:
+	mkdir -p $(DIST)
 #
 # Dependencies
 #
