@@ -76,6 +76,8 @@ UpdateFirmwareSCP()
 	curDir=$(pwd)
 	cd $1
 
+	ls -1 *.packet >packet.list
+
 	if [ ! -f packet.list ]; then
 		echoerr "Error: the <input_suribl_dir> does not seem to contain a SCP script."
 		retVal=1

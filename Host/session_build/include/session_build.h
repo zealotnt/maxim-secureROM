@@ -50,7 +50,7 @@ using namespace MXIM::HSM::nCipher;
 //-----------------------
 // CONSTANTS
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#define INIFILE		 ".\\session_build.ini"
+#define INIFILE		 "session_build.ini"
 #define MAJV		3
 #define MINV		7
 #define ZVER		14
