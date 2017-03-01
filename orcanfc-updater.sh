@@ -4,7 +4,7 @@
 ##################################################################################################
 # constant definition
 ##################################################################################################
-UPGRADE_TYPE_LIST=("ERASER" "SURIBL" "SURISDK" "ALL")
+UPGRADE_TYPE_LIST=("ERASER" "SURIBL" "SURISDK" "ALL" "SURISDK_S")
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cmdname=$(basename $0)
 . $DIR/Host/customer_scripts/scripts/colorCode.sh
@@ -16,6 +16,7 @@ DEFAULT_SVC=/home/root/ischool/svc
 SURISCP_UPDATER=$DIR/Host/customer_scripts/lib/serial_sender/serial_sender.py
 SURISDK_UPDATER_PC=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater
 SURISDK_UPDATER_BOARD=$DIR/Host/surisdk-fw-upgrade/orcanfc_board_updater
+SURISDK_SIGNED_UPDATER_PC=$DIR/Host/surisdk-fw-upgrade/orcanfc_updater_secure
 SURISCP_FIRST_TRY=100
 
 # Detect environment, and use the updater accordingly
@@ -77,6 +78,7 @@ UpdateFirmwareSCP()
 	cd $1
 
 	ls -1 *.packet >packet.list
+	echo "Update SCP with package $1"
 
 	if [ ! -f packet.list ]; then
 		echoerr "Error: the <input_suribl_dir> does not seem to contain a SCP script."
@@ -173,6 +175,31 @@ UpgradeSurisdk()
 	fi
 
 	$SURISDK_UPDATER $SERIAL_PORT $UPGRADE_FILE
+	retVal=$?
+	echonoti "**************************************************"
+	return $retVal
+}
+
+UpgradeSurisdkSigned()
+{
+	echonoti "**************************************************"
+	echonoti "Update Maxim surisdk_signed firmware, using $UPGRADE_FILE"
+
+	if [[ "$IsBoard" != "" ]]; then
+		killall svc
+		echoinfo "Kill others svc and start another svc session"
+		echoinfo "Set STYL_SVC_RF_CMD ENV_VAR to $SERIAL_PORT"
+		export STYL_SVC_RF_CMD=$SERIAL_PORT
+		if [[ -f "$PACKAGE_SVC" ]]; then
+			echoinfo "Run default svc at $PACKAGE_SVC"
+			$PACKAGE_SVC &
+		else
+			echoinfo "Run platform svc at $DEFAULT_SVC"
+			$DEFAULT_SVC &
+		fi
+	fi
+
+	$SURISDK_SIGNED_UPDATER_PC $SERIAL_PORT $UPGRADE_FILE
 	retVal=$?
 	echonoti "**************************************************"
 	return $retVal
@@ -280,6 +307,13 @@ fi
 
 if [[ "$UPGRADE_TYPE" == "SURISDK" || "$UPGRADE_TYPE" == "ALL" ]]; then
 	UpgradeSurisdk
+	if [[ $? != 0 ]]; then
+		exit 1
+	fi
+fi
+
+if [[ "$UPGRADE_TYPE" == "SURISDK_S" ]]; then
+	UpgradeSurisdkSigned
 	if [[ $? != 0 ]]; then
 		exit 1
 	fi
