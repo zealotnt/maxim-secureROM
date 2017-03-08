@@ -47,14 +47,7 @@ cp -rp $DIR/Host/customer_scripts/lib/rom Host/customer_scripts/lib
 
 mkdir -p Host/customer_scripts/scripts/buildSCP
 cp -rp $DIR/Host/customer_scripts/scripts/colorCode.sh Host/customer_scripts/scripts/colorCode.sh
-cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/eraser Host/customer_scripts/scripts/buildSCP
 cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms Host/customer_scripts/scripts/buildSCP
 cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk Host/customer_scripts/scripts/buildSCP
-cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/suribl Host/customer_scripts/scripts/buildSCP
-
-mkdir -p Host/surisdk-fw-upgrade
-cp -rp $DIR/Host/surisdk-fw-upgrade/svc Host/surisdk-fw-upgrade/svc
-cp -rp $DIR/Host/surisdk-fw-upgrade/orcanfc_updater Host/surisdk-fw-upgrade/orcanfc_updater
-cp -rp $DIR/Host/surisdk-fw-upgrade/orcanfc_board_updater Host/surisdk-fw-upgrade/orcanfc_board_updater
 
 echo "Create $TARGET_FOLDER successfully"

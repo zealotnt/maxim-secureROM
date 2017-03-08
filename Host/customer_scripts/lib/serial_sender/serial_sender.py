@@ -187,7 +187,7 @@ def parse_scpcmd_file(filename, bl_scp, options):
 def process_packet(packet_list, options):
 
     if options.verbose >= VERBOSE:
-        print 'Start SCP session (use -v for details)'
+        print 'Start SCP session with %d first try (use -v for details)' % options.first_retry_nb
 
     # Get the connection packets
     con_req = packet_list[0]
