@@ -612,6 +612,23 @@ int ecdsa_sign_payload(u8 *signature, u8 *payload, u32 payload_len)
 #elif _SAFENET_HSM
     // TODO: Do the sign operation here
     mlsECDSASignP256r1Sha256(hSession, hPriKey, payload, payload_len, &sig_combined, &sig_size);
+    if (resu != UCL_OK)
+    {
+        printf("ERROR on ECDSA sha256 sign (%d)\n", resu);
+        return (EXIT_FAILURE);
+    }
+
+    for (i = 0; i < 64; i++)
+    {
+        if (i < 32)
+        {
+            r3[i] = sig_combined[i];
+        }
+        else
+        {
+            s3[i - 32] = sig_combined[i];
+        }
+    }
 
 #else
 

@@ -250,10 +250,6 @@ int mlsECDSAVerifyP256r1Sha256(CK_SESSION_HANDLE hSession,
     {
         printf("Signature invalid. Signature was:\n");
     }
-    else if (rv == CKR_OK)
-    {
-        printf("Valid\n");
-    }
     else
     {
         CHECK_P11_ERROR(rv);

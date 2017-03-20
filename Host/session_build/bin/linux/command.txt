@@ -10,6 +10,10 @@ export ET_HSM_NETCLIENT_SERVERLIST=192.168.9.29:12396
 # + maximtestcrk.key
 # + sb_script.txt
 # + binary.s19
+#
+# To generate the "binary.s19" file from any ".bin" file, using this command
+objcopy -I binary -O srec --srec-forceS3 --srec-len=128 --adjust-vma 0x10000000 <path-to-.bin> binary.s19
+
 ./session_build.exe session_mode=SCP_ANGELA_ECDSA verbose=no output_file=output/out pp=ECDSA addr_offset=00000000 chunk_size=4094 script_file=sb_script.txt ecdsa_file="maximtestcrk.key" > output/output.log
 
 LC_ALL=C  ls -1 *.packet >packet.list

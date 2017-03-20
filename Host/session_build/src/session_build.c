@@ -541,12 +541,14 @@ int ecdsa_sign_payload(void)
 	resu = g_objMXIMUCLLibrary.ECDSAVerifyP256r1Sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
 
 #elif _SAFENET_HSM
+	#if 0
     mlsECDSASignP256r1Sha256(hSession, hPriKey, msg3, sizeof(msg3), &sig_combined, &sig_size);
     resu = mlsECDSAVerifyP256r1Sha256(hSession, hPubKey, msg3, sizeof(msg3), sig_combined, sig_size);
     if (sig_combined)
     {
     	free(sig_combined);
     }
+    #endif
 
 #else
 	resu = ucl_ecdsa_verify_p256r1_sha256(32, xg, yg, xq3, yq3, r3, s3, a, n, p, msg3, sizeof(msg3));
@@ -4099,6 +4101,9 @@ int write_file(char *sfilename, char *ptr_address_offset)
 	//until the end.
 	while (i < data_len)
 	{
+		printf("\rProgress:%.2f%%        ", ((float)i*100/(float)data_len));
+		fflush(stdout);
+
 		chunk_len = 0;
 		chunk[chunk_len] = data[i];
 		//the block starting address (needed for write-mem)
@@ -4147,6 +4152,7 @@ int write_file(char *sfilename, char *ptr_address_offset)
 		host();
 		ack();
 	}
+	printf("\r\n");
 	if (TRUE == verbose)
 	{
 		for (i = 0; i < chunk_len; i++)
@@ -7523,42 +7529,9 @@ int main(int argc, char **argv)
 		return (EXIT_FAILURE);
 	}
 #elif _SAFENET_HSM
-    // char *key_name;
-    // char *usr_pin;
-    // char *slot_num_chr;
-    // int slot_num;
-
-    // key_name = getenv(MLS_HSM_KEY_NAME_ENV);
-    // if (key_name == NULL)
-    // {
-    //     key_name = HSM_DEFAULT_KEY_NAME;
-    // }
-
-    // usr_pin = getenv(MLS_HSM_USER_PIN_ENV);
-    // if (usr_pin == NULL)
-    // {
-    //     usr_pin = HSM_DEFAULT_USER_PIN;
-    // }
-
-    // slot_num_chr = getenv(MLS_HSM_SLOT_NUM_ENV);
-    // if (slot_num_chr != NULL)
-    // {
-    //     slot_num = atoi(slot_num_chr);
-    // }
-    // else
-    // {
-    //     slot_num = HSM_DEFAULT_SLOT_NUM;
-    // }
-    // // TODO: login and initialization to HSM
-    // mlsHsmOpenConnection(slot_num, &hSession, usr_pin);
-
-    // mlsHsmGetKey(hSession, key_name, &hPriKey, &hPubKey);
-
     mlsHsmOpenConnection(5, &hSession, "5678");
 
     mlsHsmGetKey(hSession, "maxim_ecdsa", &hPriKey, &hPubKey);
-
-    // mlsGetECDSAPubkey(hSession, hPubKey);
 
 #else
 	fprintf(fp, "UCL Version: %s (%s)", (char *)ucl_get_version(), (char *)ucl_get_build_date());
