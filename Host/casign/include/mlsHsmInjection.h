@@ -48,6 +48,13 @@ int mlsHsmGetKey(CK_SESSION_HANDLE hSession,
                  CK_OBJECT_HANDLE* phPriKey,
                  CK_OBJECT_HANDLE* phPubKey);
 
+int mlsECDSAVerifyP256r1Sha256(CK_SESSION_HANDLE hSession,
+                               CK_OBJECT_HANDLE hPubKey,
+                               CK_BYTE* data,
+                               CK_SIZE dataLen,
+                               CK_BYTE* pSign,
+                               CK_SIZE signLen);
+
 int mlsECDSASignP256r1Sha256(CK_SESSION_HANDLE hSession,
                              CK_OBJECT_HANDLE hPriKey,
                              CK_BYTE* data,

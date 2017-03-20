@@ -138,8 +138,8 @@ static void findEccPublicKey(CK_SESSION_HANDLE hSession,
 
     rv = C_FindObjects(hSession, phKey, 1, &keyCount);
     CHECK_P11_ERROR(rv);
-    printf("rv=%d\r\n", rv);
-    printf("keyCount=%d\r\n", keyCount);
+    printf("rv=%d\r\n", (int)rv);
+    printf("keyCount=%d\r\n", (int)keyCount);
     CHECK_COND(keyCount >= 1);
 
     rv = C_FindObjectsFinal(hSession);
@@ -225,6 +225,7 @@ int mlsHsmGetKey(CK_SESSION_HANDLE hSession,
 {
     findEccPublicKey(hSession, label, phPubKey);
     findEccPrivateKey(hSession, label, phPriKey);
+    return 0;
 }
 
 int mlsECDSAVerifyP256r1Sha256(CK_SESSION_HANDLE hSession,
