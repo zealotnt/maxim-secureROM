@@ -3,6 +3,7 @@ Host/customer_scripts/scripts/buildSCP/*
 !Host/customer_scripts/scripts/buildSCP/styl_prod_key
 !Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk
 !Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms
+!Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms_prod_key
 !Host/customer_scripts/scripts/buildSCP/eraser
 !Host/customer_scripts/scripts/buildSCP/suribl-lite
 !Host/customer_scripts/scripts/buildSCP/suribl-35-lite
