@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (C) 2012-2014 Maxim Integrated Products, Inc., All Rights Reserved.
 #
@@ -98,7 +98,15 @@ case $# in
 	;;
 esac
 
-TOOLDIR=$(readlink -e -- "$(dirname -- "$0")")
+echo "Detect STYL_SIGNER environment variable"
+if [[ "$STYL_SIGNER" == "HSM" ]]; then
+	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+	TOOLDIR=$DIR/../../session_build/bin/linux/
+	echo "HSM environment detected, using HSM to generate package"
+else
+	TOOLDIR=$(readlink -e -- "$(dirname -- "$0")")
+fi
+
 KEYFILE=$(readlink -e -- "$key")  || {
 	echo >&2 "error: Private key \`$key' does not exist"
 	exit 3
@@ -145,10 +153,25 @@ write-timeout U 0000
 write-timeout V 0000
 write-timeout 0 FA00
 EOF
-
-$TOOLDIR/../lib/session_build.exe session_mode=SCP_ANGELA_ECDSA verbose=no output_file=$OUTPUTDIR/session_angela_binary pp=ECDSA addr_offset=00000000 chunk_size=4094 script_file=sb_script.txt ecdsa_file=$KEYFILE  &&
-	LC_ALL=C  ls -1 *.packet >packet.list
-
+if [[ "$STYL_SIGNER" == "HSM" ]]; then
+	$TOOLDIR/session_build.exe session_mode=SCP_ANGELA_ECDSA \
+		verbose=no \
+		output_file=$OUTPUTDIR/session_angela_binary \
+		pp=ECDSA addr_offset=00000000 \
+		chunk_size=4094 \
+		script_file=sb_script.txt \
+		ecdsa_file=$KEYFILE  &&
+		LC_ALL=C  ls -1 *.packet >packet.list
+else
+	$TOOLDIR/../lib/session_build.exe session_mode=SCP_ANGELA_ECDSA \
+		verbose=no \
+		output_file=$OUTPUTDIR/session_angela_binary \
+		pp=ECDSA addr_offset=00000000 \
+		chunk_size=4094 \
+		script_file=sb_script.txt \
+		ecdsa_file=$KEYFILE  &&
+		LC_ALL=C  ls -1 *.packet >packet.list
+fi
 
 if [ $? -ne 0 ] ; then
 echo "ERROR."
