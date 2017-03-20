@@ -7031,13 +7031,16 @@ static int load_args(int argc, char **argv)
 		config_struct.ecdsa_len = ECDSA_MODULUS_LEN;
 
 #ifndef _MXIM_HSM
+#ifndef _SAFENET_HSM
 		resu = read_file_ecdsa(config_struct.ecdsa_pubkey_x, config_struct.ecdsa_pubkey_y, config_struct.ecdsa_privkey, config_struct.ecdsa_len, ecdsafile);
 		if (EXIT_SUCCESS != resu)
 		{
 			printf("ERROR in read_file_ecdsa\n");
 			return (EXIT_FAILURE);
 		}
-#endif
+#endif // _SAFENET_HSM
+#endif // _MXIM_HSM
+
 		if (config_struct.pp != SCP_PP_ECDSA)
 		{
 			printf("WARNING\n");

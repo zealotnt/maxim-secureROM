@@ -1903,6 +1903,7 @@ int process(void)
     config_struct.ecdsa_len = ECDSA_MODULUS_LEN;
 
 #ifndef _MXIM_HSM
+#ifndef _SAFENET_HSM
     if (strstr(algo, "rsa") != NULL)
     {
         //reading the signing key
@@ -1925,8 +1926,8 @@ int process(void)
             return (EXIT_FAILURE);
         }
     }
-
-#endif
+#endif // _SAFENET_HSM
+#endif // _MXIM_HSM
 
     //reading the binary file to be signed
     //file is read and data are put in payload, payload_len
