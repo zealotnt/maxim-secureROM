@@ -4104,7 +4104,7 @@ int write_file(char *sfilename, char *ptr_address_offset)
 	//until the end.
 	while (i < data_len)
 	{
-		printf("\rProgress:%.2f%%        ", ((float)i*100/(float)data_len));
+		printf("Progress:%.2f%%        \r", ((float)i*100/(float)data_len));
 		fflush(stdout);
 
 		chunk_len = 0;
