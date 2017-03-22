@@ -4,7 +4,7 @@
 ##################################################################################################
 # constant definition
 ##################################################################################################
-UPDATER_VERSION="0.0.2 NETS KEY"
+UPDATER_VERSION="0.0.3 NETS KEY"
 UPGRADE_TYPE_LIST=("ORCANFC" "ALL")
 DEFAULT_UPG_TYPE="ORCANFC"
 
@@ -229,8 +229,21 @@ if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "ORCANFC" ]]; then
 	if [[ -f "$UPGRADE_FILE" ]]; then
 		rm -rf $ORCANFC_TEMP_EXTRACT_FOLDER
 		mkdir -p $ORCANFC_TEMP_EXTRACT_FOLDER
-		tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
-		ORCANFC_FW_DIR=$ORCANFC_TEMP_EXTRACT_FOLDER/scp_out
+
+		# Check if the file is "zip" or "tar.gz"
+		if [[ ${UPGRADE_FILE: -4} == ".zip" ]]; then
+			CheckAndInstallUnzip
+			unzip $UPGRADE_FILE -d $ORCANFC_TEMP_EXTRACT_FOLDER
+		elif [[ ${UPGRADE_FILE: -7} == ".tar.gz" ]]; then
+			tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
+		elif [[ ${UPGRADE_FILE: -4} == ".tar" ]]; then
+			tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
+		else
+			echoerr 'Error: $UPGRADE_FILE: file type not regconize'
+			exit 1
+		fi
+		outputFolder=`ls $ORCANFC_TEMP_EXTRACT_FOLDER`
+		ORCANFC_FW_DIR=$ORCANFC_TEMP_EXTRACT_FOLDER/$outputFolder
 	# Check if input param is a folder
 	elif [[ -d "$UPGRADE_FILE" ]]; then
 		ORCANFC_FW_DIR=$UPGRADE_FILE
