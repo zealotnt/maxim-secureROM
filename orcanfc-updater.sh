@@ -4,7 +4,10 @@
 ##################################################################################################
 # constant definition
 ##################################################################################################
+UPDATER_VERSION="0.0.2 NETS KEY"
 UPGRADE_TYPE_LIST=("ORCANFC" "ALL")
+DEFAULT_UPG_TYPE="ORCANFC"
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cmdname=$(basename $0)
 . $DIR/Host/customer_scripts/scripts/colorCode.sh
@@ -21,7 +24,7 @@ MAXIM_RST_PIN="81"
 ORCANFC_TEMP_EXTRACT_FOLDER=/tmp/orcanfc_firmware
 ORCANFC_FW_DIR=""
 ORCANFC_OTP_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms
-ORCANFC_KEY_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk
+ORCANFC_KEY_DIR=$DIR/Host/customer_scripts/scripts/buildSCP/nets_key
 
 SCRIPT_NAME=`basename "$0"`
 SCRIPT_HDR="[$SCRIPT_NAME]"
@@ -40,9 +43,10 @@ usage()
 	echo "  -p PORT | --port=PORT          Serial device to interface with reader"
 	echo "                                 ex, -p /dev/ttyUSB0"
 	echo "  -t | --type=UPGRADE_TYPE       Upgrade firmware type"
-	echo "                                 support types: '${UPGRADE_TYPE_LIST[@]}', if no type specify, 'ALL' type will be default"
+	echo "                                 support types: '${UPGRADE_TYPE_LIST[@]}', if no type specify, '$DEFAULT_UPG_TYPE' type will be default"
 	echo "  -f | --file=ORCANFC_FIRMWARE   Location of orcanfc firmware, should be tar/zip file, or folder contains SCP package"
 	echo "  -h | --help                    Show this message"
+	echo "Updater Version: $UPDATER_VERSION"
 	exit 1
 }
 
@@ -137,10 +141,28 @@ UpgradeOrcaNfc()
 {
 	echonoti "**************************************************"
 	echonoti "Update OrcaNFC Firmware"
-	UpdateFirmwareSCP $ORCANFC_FW_DIR "no"
+	UpdateFirmwareSCP $ORCANFC_FW_DIR "yes"
 	retVal=$?
 	echonoti "**************************************************"
 	return $retVal
+}
+
+CheckPackageInstall()
+{
+	# [Ref](http://stackoverflow.com/questions/1298066/check-if-a-package-is-installed-and-then-install-it-if-its-not)
+	package=$1
+	status=$(dpkg-query -W -f='${Status}' $package 2>/dev/null | grep -c "ok installed")
+	return $status
+}
+
+CheckAndInstallUnzip()
+{
+	CheckPackageInstall unzip
+	retVal=$?
+	if [[ $retVal == 0 ]]; then
+		echonoti "Unzip not installed, install it"
+		sudo apt-get install unzip
+	fi
 }
 
 ##################################################################################################
@@ -199,7 +221,7 @@ fi
 
 if [[ "$UPGRADE_TYPE" == "" ]]; then
 	echoinfo "No upgrade firmware method specified, use upgrade 'ORCANFC' as default"
-	UPGRADE_TYPE="ORCANFC"
+	UPGRADE_TYPE=$DEFAULT_UPG_TYPE
 fi
 
 if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "ORCANFC" ]]; then
@@ -208,7 +230,7 @@ if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "ORCANFC" ]]; then
 		rm -rf $ORCANFC_TEMP_EXTRACT_FOLDER
 		mkdir -p $ORCANFC_TEMP_EXTRACT_FOLDER
 		tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
-		ORCANFC_FW_DIR=$ORCANFC_TEMP_EXTRACT_FOLDER/tempFw
+		ORCANFC_FW_DIR=$ORCANFC_TEMP_EXTRACT_FOLDER/scp_out
 	# Check if input param is a folder
 	elif [[ -d "$UPGRADE_FILE" ]]; then
 		ORCANFC_FW_DIR=$UPGRADE_FILE
@@ -235,10 +257,10 @@ if [[ "$UPGRADE_TYPE" == "ALL" ]]; then
 	if [[ $? != 0 ]]; then
 		exit 1
 	fi
-	LoadMaximOTP
-	if [[ $? != 0 ]]; then
-		exit 1
-	fi
+	# LoadMaximOTP
+	# if [[ $? != 0 ]]; then
+	# 	exit 1
+	# fi
 fi
 
 if [[ "$UPGRADE_TYPE" == "ORCANFC" || "$UPGRADE_TYPE" == "ALL" ]]; then

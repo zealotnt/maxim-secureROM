@@ -34,20 +34,20 @@ mkdir $TARGET_FOLDER
 
 # Make the folder structure of secureROM
 cd $TARGET_FOLDER
-cp $DIR/orcanfc-updater.sh .
+cp 			$DIR/orcanfc-updater.sh 										.
+cp 			$DIR/orcanfc-updater-readme.txt 								.
 
-mkdir -p Host/customer_scripts/keys
-cp -rp $DIR/Host/customer_scripts/keys Host/customer_scripts
+mkdir -p 	Host/customer_scripts/keys
+cp -rp 		$DIR/Host/customer_scripts/keys									Host/customer_scripts
 
-mkdir -p Host/customer_scripts/lib/serial_sender
-cp -rp $DIR/Host/customer_scripts/lib/serial_sender Host/customer_scripts/lib
+mkdir -p 	Host/customer_scripts/lib/serial_sender
+cp -rp 		$DIR/Host/customer_scripts/lib/serial_sender					Host/customer_scripts/lib
 
-mkdir -p Host/customer_scripts/lib/rom
-cp -rp $DIR/Host/customer_scripts/lib/rom Host/customer_scripts/lib
+mkdir -p 	Host/customer_scripts/lib/rom
+cp -rp 		$DIR/Host/customer_scripts/lib/rom								Host/customer_scripts/lib
 
-mkdir -p Host/customer_scripts/scripts/buildSCP
-cp -rp $DIR/Host/customer_scripts/scripts/colorCode.sh Host/customer_scripts/scripts/colorCode.sh
-cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/OTP_UART_250ms Host/customer_scripts/scripts/buildSCP
-cp -rp $DIR/Host/customer_scripts/scripts/buildSCP/prod_p3_write_crk Host/customer_scripts/scripts/buildSCP
+mkdir -p 	Host/customer_scripts/scripts/buildSCP
+cp -rp 		$DIR/Host/customer_scripts/scripts/colorCode.sh					Host/customer_scripts/scripts/colorCode.sh
+cp -rp 		$DIR/Host/customer_scripts/scripts/buildSCP/nets_key			Host/customer_scripts/scripts/buildSCP
 
 echo "Create $TARGET_FOLDER successfully"
