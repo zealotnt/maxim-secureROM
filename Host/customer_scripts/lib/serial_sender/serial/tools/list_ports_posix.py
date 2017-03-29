@@ -31,7 +31,7 @@ if   plat[:5] == 'linux':    # Linux (confirmed)
 
 elif plat == 'cygwin':       # cygwin/win32
     def comports():
-        devices = glob.glob('/dev/com*')
+        devices = glob.glob('/dev/tty*')
         return [(d, d, d) for d in devices]
 
 elif plat[:7] == 'openbsd':    # OpenBSD
