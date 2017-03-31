@@ -258,9 +258,10 @@ CheckValidFileType $UPGRADE_TYPE "${UPGRADE_TYPE_LIST[@]}"
 
 if [[ "$IsBoard" == "" ]];then
 	echoinfo "Environment PC detected"
+	ORCANFC_BOARD_TOGGLE_RST=" --auto-reset "
 else
 	echoinfo "Environment Board detected"
-	ORCANFC_BOARD_TOGGLE_RST=" --resetMaxim "
+	ORCANFC_BOARD_TOGGLE_RST=" --auto-reset --resetMaxim "
 	echoinfo "Export Maxim RESET Pin"
 	echo $MAXIM_RST_PIN > /sys/class/gpio/export
 fi

@@ -196,17 +196,15 @@ def process_packet(packet_list, options):
 
     if options.auto_reset:
         if options.verbose >= VERBOSE:
-            print 'Reset Board throw UART'
-        bl_scp.setRTS(True)
-        time.sleep(0.5)
-        bl_scp.setRTS(False)
+            print 'Reset Board through UART'
+        resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetUART=True, serial=bl_scp)
 
     if options.verbose >= VERBOSE:
         print_noti('Trying to Connect. Please Reset/Repower maxim for flashing')
 
     if options.enableMaximReset == True:
-        print "Try reset Maxim"
-        resetMaxim(options.resetMaximNormalHigh)
+        print "Try reset Maxim through GPIO"
+        resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetGPIO=True)
 
     bbar = progressbar.ProgressBar(widgets=[progressbar.AnimatedMarker()], maxval=options.first_retry_nb - 1).start()
     for i in bbar((i for i in range(options.first_retry_nb))):
@@ -256,16 +254,44 @@ def process_packet(packet_list, options):
     except Exception as insts:
         raise Exception()
 
-def resetMaxim(resetMaximNormalHigh=False):
+def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, serial=None):
     MAXIM_RESET_PIN = 81
+    MAXIM_EXPORT_GPIO="echo %d > /sys/class/gpio/export" % MAXIM_RESET_PIN
     MAXIM_PULL_LOW="echo " + "low " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
     MAXIM_PULL_HIGH="echo " + "high " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
+
     if resetMaximNormalHigh == True:
-        os.system(MAXIM_PULL_LOW)
-        os.system(MAXIM_PULL_HIGH)
+        if resetGPIO == True:
+            os.system(MAXIM_EXPORT_GPIO)
+            os.system(MAXIM_PULL_LOW)
+            os.system(MAXIM_PULL_HIGH)
+        if resetUART == True:
+            if serial == None:
+                print_err("invalid serial value, abort resetting")
+                return
+            print ("DTR/RTS set/low")
+            serial.setRTS(True)
+            serial.setDTR(True)
+            time.sleep(0.5)
+            print ("DTR/RTS clear/high")
+            serial.setRTS(False)
+            serial.setDTR(False)
     else:
-        os.system(MAXIM_PULL_HIGH)
-        os.system(MAXIM_PULL_LOW)
+        if resetGPIO == True:
+            os.system(MAXIM_EXPORT_GPIO)
+            os.system(MAXIM_PULL_HIGH)
+            os.system(MAXIM_PULL_LOW)
+        if resetUART == True:
+            if serial == None:
+                print_err("invalid serial value, abort resetting")
+                return
+            print ("DTR/RTS clear/high")
+            serial.setRTS(False)
+            serial.setDTR(False)
+            time.sleep(0.5)
+            print ("DTR/RTS set/low")
+            serial.setRTS(True)
+            serial.setDTR(True)
 
 # ---- MAIN
 
@@ -326,7 +352,7 @@ By default the number is 200")
                      help="Enable Maxim Reset functionality (Only in SIRIUS imx6)", default=False)
 
     group.add_option("--resetMaximNormalHigh", dest="resetMaximNormalHigh", action="store_true",
-                     help="Enable Maxim Reset functionality (Only in SIRIUS imx6)", default=False)
+                     help="Set polarity of Maxim pin to high as normal", default=False)
 
     group.add_option("-w", "--warning", dest="warningRestrictedData", action="store_true",
                      help="Tell SCP script that this is a sensitive data, could be fail if overwritten", default=False)
