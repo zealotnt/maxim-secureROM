@@ -260,6 +260,18 @@ def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, ser
     MAXIM_PULL_LOW="echo " + "low " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
     MAXIM_PULL_HIGH="echo " + "high " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
 
+    # Using DTR/RTS only pull low/pull high with appropriate hardware wiring
+    # In this case, we are only be able to pull the Maxim low
+    # The hardware wiring is
+    # + DTR to B of PNP trans
+    # + RTS to E of PNP trans
+    # + To pull reset pin low: DTR low, RTS high
+    # + To pull reset pin high: DTR + RTS both high/low
+    # (to avoid the open port case -> both line is low)
+    # (port not opened -> both line is high)
+    # Note:
+    # DTR/RTS clear/high - serial.setRTS(False)
+    # DTR/RTS set/low - serial.setRTS(True)
     if resetMaximNormalHigh == True:
         if resetGPIO == True:
             os.system(MAXIM_EXPORT_GPIO)
@@ -269,13 +281,7 @@ def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, ser
             if serial == None:
                 print_err("invalid serial value, abort resetting")
                 return
-            print ("DTR/RTS set/low")
-            serial.setRTS(True)
-            serial.setDTR(True)
-            time.sleep(0.5)
-            print ("DTR/RTS clear/high")
-            serial.setRTS(False)
-            serial.setDTR(False)
+            print_err("Not support pull RESET pin high")
     else:
         if resetGPIO == True:
             os.system(MAXIM_EXPORT_GPIO)
@@ -285,11 +291,10 @@ def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, ser
             if serial == None:
                 print_err("invalid serial value, abort resetting")
                 return
-            print ("DTR/RTS clear/high")
             serial.setRTS(False)
-            serial.setDTR(False)
+            serial.setDTR(True)
             time.sleep(0.5)
-            print ("DTR/RTS set/low")
+            # Pull two pin low
             serial.setRTS(True)
             serial.setDTR(True)
 

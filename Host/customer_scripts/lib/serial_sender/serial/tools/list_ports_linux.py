@@ -133,7 +133,8 @@ def hwinfo(device):
     return 'n/a'    # XXX directly remove these from the list?
 
 def comports():
-    devices = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*') + glob.glob('/dev/ttymxc*')
+    # udev rule on orcanfc, for FTDI device, it will become /dev/ttyNFC
+    devices = glob.glob('/dev/ttyNFC*') + glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*') + glob.glob('/dev/ttymxc*')
     return [(d, describe(d), hwinfo(d)) for d in devices]
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

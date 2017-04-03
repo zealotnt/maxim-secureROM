@@ -4,7 +4,7 @@
 ##################################################################################################
 # constant definition
 ##################################################################################################
-UPDATER_VERSION="0.0.4 NETS KEY"
+UPDATER_VERSION="0.0.5 NETS KEY"
 UPGRADE_TYPE_LIST=("ORCANFC" "ALL")
 DEFAULT_UPG_TYPE="ORCANFC"
 

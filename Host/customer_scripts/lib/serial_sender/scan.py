@@ -62,6 +62,7 @@ def scan():
     available = []
 
     if os.name == 'posix':
+        # udev rule on orcanfc, for FTDI device, it will become /dev/ttyNFC
         available = glob.glob('/dev/ttyNFC*') + glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*')
     else:
         for i in range(256):
