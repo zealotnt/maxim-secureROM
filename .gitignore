@@ -1,3 +1,5 @@
+buildOut*/*
+
 Host/customer_scripts/scripts/SLA
 Host/customer_scripts/scripts/buildSCP/*
 !Host/customer_scripts/scripts/buildSCP/styl_prod_key

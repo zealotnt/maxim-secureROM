@@ -298,3 +298,10 @@ for ((j=0; j < $count; j++)); do
 	fi
 	echo ""
 done
+
+if [[ -d "./sirius_fixed_firmware" ]]; then
+	echoinfo "SIRIUS_FIXED_FIRMWARE folder found, copy the fixed firmware to $DEST_FOLDER"
+	cp ./sirius_fixed_firmware/* $DEST_FOLDER
+	echoinfo "Create the checksum.all.sum file"
+	cd $DEST_FOLDER && find *.tar.xz -type f -exec md5sum {} \; | sort -k 2 | md5sum > md5sum.all.sum
+fi
