@@ -239,6 +239,7 @@ do
 	esac
 done
 
+TIME_START=$(date +%s.%N)
 #
 # Check if offset not zero, if yes, create a output folder name accordingly
 #
@@ -261,6 +262,7 @@ else
 		echoinfo "The $DEST_FOLDER won't be removed"
 	fi
 fi
+echo ""
 mkdir -p $DEST_FOLDER
 
 #
@@ -275,6 +277,7 @@ for ((j=0; j < $count; j++)); do
 	fwBinExtOut=${FIRMWARE_BINARY_EXTENSION_OUT[j]}
 	fwVerFile="${SIRIUS_WORKSPACE}/${project}/${FIRMWARE_VER_FILE[j]}"
 
+	TIME_FW_START=$(date +%s.%N)
 	if [[ "${VER_OFFSET}" != "0" ]]; then
 		# avoid $fwStr, because if this argument is empty, the funtion will understand only 1 argc is passed to it
 		# use "${fwStr}" instead, the arg will remain
@@ -296,12 +299,25 @@ for ((j=0; j < $count; j++)); do
 		setFirmwareVersion "${fwStr}" "${fwVerFile}" $verMajor $verMinor $verRev
 		echoinfo "Set $fwOut back to old version: $verMajor.$verMinor.$verRev"
 	fi
+	TIME_FW_END=$(date +%s.%N)
+	TIME_FW_DIFF=$(echo "$TIME_FW_END - $TIME_FW_START" | bc)
+	echoinfo "Build $fwOut firmware successfully in $TIME_FW_DIFF (s)"
 	echo ""
 done
 
+#
+# Copy the Fixed firmware to $DEST_FOLDER folder
+#
 if [[ -d "./sirius_fixed_firmware" ]]; then
 	echoinfo "SIRIUS_FIXED_FIRMWARE folder found, copy the fixed firmware to $DEST_FOLDER"
 	cp ./sirius_fixed_firmware/* $DEST_FOLDER
 	echoinfo "Create the checksum.all.sum file"
 	cd $DEST_FOLDER && find *.tar.xz -type f -exec md5sum {} \; | sort -k 2 | md5sum > md5sum.all.sum
 fi
+
+#
+# Print the build time
+#
+TIME_END=$(date +%s.%N)
+TIME_DIFF=$(echo "$TIME_END - $TIME_START" | bc)
+echoinfo "Build firmware successfully in $TIME_DIFF (s)"
