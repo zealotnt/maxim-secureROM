@@ -313,6 +313,10 @@ if [[ -d "./sirius_fixed_firmware" ]]; then
 	cp ./sirius_fixed_firmware/* $DEST_FOLDER
 	echoinfo "Create the checksum.all.sum file"
 	cd $DEST_FOLDER && find *.tar.xz -type f -exec md5sum {} \; | sort -k 2 | md5sum > md5sum.all.sum
+	echoinfo "Create the factory folder, this folder is useful for making flasher"
+	mkdir factory
+	cp *.tar.xz factory
+	cp md5sum.all.sum factory
 fi
 
 #
