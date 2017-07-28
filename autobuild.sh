@@ -264,6 +264,9 @@ else
 fi
 echo ""
 mkdir -p $DEST_FOLDER
+mkdir -p $DEST_FOLDER/json
+mkdir -p $DEST_FOLDER/tar_xz
+mkdir -p $DEST_FOLDER/binary
 
 #
 # Start the build process
@@ -293,8 +296,11 @@ for ((j=0; j < $count; j++)); do
 	fi
 	buildProject 		$SIRIUS_WORKSPACE $project $config
 	getOutputFirmware	$SIRIUS_WORKSPACE $project $config "$fwOut.json" $DEST_FOLDER
+	getOutputFirmware	$SIRIUS_WORKSPACE $project $config "$fwOut.json" $DEST_FOLDER/json
 	getOutputFirmware	$SIRIUS_WORKSPACE $project $config "$fwOut.json.tar.xz" $DEST_FOLDER
+	getOutputFirmware	$SIRIUS_WORKSPACE $project $config "$fwOut.json.tar.xz" $DEST_FOLDER/tar_xz
 	getOutputFirmware	$SIRIUS_WORKSPACE $project $config "${fwOut}${fwBinExtOut}" $DEST_FOLDER
+	getOutputFirmware	$SIRIUS_WORKSPACE $project $config "${fwOut}${fwBinExtOut}" $DEST_FOLDER/binary
 	if [[ "${VER_OFFSET}" != "0" ]]; then
 		setFirmwareVersion "${fwStr}" "${fwVerFile}" $verMajor $verMinor $verRev
 		echoinfo "Set $fwOut back to old version: $verMajor.$verMinor.$verRev"
@@ -311,6 +317,8 @@ done
 if [[ -d "./sirius_fixed_firmware" ]]; then
 	echoinfo "SIRIUS_FIXED_FIRMWARE folder found, copy the fixed firmware to $DEST_FOLDER"
 	cp ./sirius_fixed_firmware/* $DEST_FOLDER
+	cp ./sirius_fixed_firmware/*.json $DEST_FOLDER/json
+	cp ./sirius_fixed_firmware/*.tar_xz $DEST_FOLDER/tar_xz
 	echoinfo "Create the checksum.all.sum file"
 	cd $DEST_FOLDER && find *.tar.xz -type f -exec md5sum {} \; | sort -k 2 | md5sum > md5sum.all.sum
 	echoinfo "Create the factory folder, this folder is useful for making flasher"
