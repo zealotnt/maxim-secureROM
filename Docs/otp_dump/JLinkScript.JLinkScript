@@ -1,0 +1,7 @@
+void InitTarget(void)
+{
+Report("MAX32550 J-Link Script File.");
+JTAG_ResetPin = 0;
+SYS_Sleep(100);
+JTAG_ResetPin = 1;
+}
