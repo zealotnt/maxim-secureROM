@@ -7,9 +7,33 @@
 from styl_auto_on_off import StylAutoOnOff
 import time
 import os
+import sys
 
-autoOnOffPort = "/dev/ttyACM1"
-maximPort = "/dev/ttyACM0"
+if os.name == "posix":
+	autoOnOffPort = "/dev/ttyACM1"
+	maximPort = "/dev/ttyACM0"
+	loadFirmwareCmd = ("bash ../orcanfc-updater.sh -p %s"
+	" -f /home/zealot/tmp/orca_usb/secondBootloadersigned.tar" % maximPort)
+elif os.name == "nt":
+	autoOnOffPort = "COM24"
+	maximPort = "COM31"
+	loadFirmwareCmd = ("python ../Host/customer_scripts/lib/serial_sender/serial_sender.py"
+	" -s %s -t 2 -v -w tempFw/packet.list" % maximPort)
+else:
+	print("OS not supported")
+	sys.exit(-1)
+
+def testOnOff():
+	onOffMachine = StylAutoOnOff(autoOnOffPort)
+	print("Turn off")
+	onOffMachine.TurnOff()
+	time.sleep(1)
+	print("Turn on")
+	onOffMachine.TurnOn()
+	time.sleep(1)
+	print("Turn off")
+	onOffMachine.TurnOff()
+	time.sleep(1)
 
 def test_LoadFirmware():
 	onOffMachine = StylAutoOnOff(autoOnOffPort)
@@ -20,14 +44,16 @@ def test_LoadFirmware():
 	count = 1
 	while True:
 		onOffMachine.TurnOn()
-		time.sleep(1)
-		ret = os.system("bash ../orcanfc-updater.sh -p %s -f /home/zealot/tmp/orca_usb/secondBootloadersigned.tar" % maximPort)
+		time.sleep(2)
+		ret = os.system(loadFirmwareCmd)
 		if ret != 0:
-			print ("Update maxim firmware fail")
+			onOffMachine.TurnOff()
+			print ("Update maxim firmware fail, turn off usb")
 			return None
 		print ("Success %d times" % count)
 		onOffMachine.TurnOff()
 		time.sleep(1)
 		count += 1
 
+# testOnOff()
 test_LoadFirmware()
