@@ -350,7 +350,7 @@ main() {
 		echoinfo "SIRIUS_FIXED_FIRMWARE folder found, copy the fixed firmware to $DEST_FOLDER"
 		cp ./sirius_fixed_firmware/* $DEST_FOLDER
 		cp ./sirius_fixed_firmware/*.json $DEST_FOLDER/json
-		cp ./sirius_fixed_firmware/*.tar_xz $DEST_FOLDER/tar_xz
+		cp ./sirius_fixed_firmware/*.tar.xz $DEST_FOLDER/tar_xz
 		echoinfo "Create the checksum.all.sum file"
 		cd $DEST_FOLDER && find *.tar.xz -type f -exec md5sum {} \; | sort -k 2 | md5sum > md5sum.all.sum
 		echoinfo "Create the factory folder, this folder is useful for making flasher"
