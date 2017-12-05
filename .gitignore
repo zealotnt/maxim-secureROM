@@ -1,4 +1,5 @@
 buildOut*/*
+bad_*
 
 Host/customer_scripts/scripts/SLA
 Host/customer_scripts/scripts/buildSCP/*

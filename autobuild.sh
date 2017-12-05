@@ -26,7 +26,7 @@ KRESET="\033[0m"
 KRBOLD="\033[21m"
 SCRIPT_NAME=`basename "$0"`
 SCRIPT_HDR="$SCRIPT_NAME"
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CURDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ##################################################################################################
 # function definition
@@ -220,7 +220,7 @@ setConstant() {
 		"source/styl/include/mlsCompileSwitches.h"
 		"source/styl/include/mlsCompileSwitches.h"
 	)
-	DEST_FOLDER="$DIR/buildOut"
+	DEST_FOLDER="$CURDIR/buildOut"
 	VER_OFFSET="0"
 	FROM_SOURCE="no"
 }
@@ -317,6 +317,8 @@ main() {
 	mkdir -p $DEST_FOLDER/json
 	mkdir -p $DEST_FOLDER/tar_xz
 	mkdir -p $DEST_FOLDER/binary
+	mkdir -p $DEST_FOLDER/pn5180_firmware
+	mkdir -p $DEST_FOLDER/pn5180_cfg
 
 	#
 	# Start the build process
@@ -369,6 +371,8 @@ main() {
 		cp ./sirius_fixed_firmware/* $DEST_FOLDER
 		cp ./sirius_fixed_firmware/*.json $DEST_FOLDER/json
 		cp ./sirius_fixed_firmware/*.tar.xz $DEST_FOLDER/tar_xz
+		cp ./sirius_fixed_firmware/*.h $DEST_FOLDER/pn5180_firmware
+		cp ./sirius_fixed_firmware/*.cfg $DEST_FOLDER/pn5180_cfg
 		echoinfo "Create the checksum.all.sum file"
 		cd $DEST_FOLDER && find *.tar.xz -type f -exec md5sum {} \; | sort -k 2 | md5sum > md5sum.all.sum
 		echoinfo "Create the factory folder, this folder is useful for making flasher"
@@ -376,6 +380,10 @@ main() {
 		cp *.tar.xz factory
 		cp md5sum.all.sum factory
 	fi
+
+	echoinfo "Creating the failure firmwares"
+	cd $CURDIR
+	python test_rollback.py -p $DEST_FOLDER -t all >/dev/null
 
 	#
 	# Print the build time
