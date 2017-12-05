@@ -95,9 +95,27 @@ getFirmwareVersion() {
 	fi
 
 	# https://unix.stackexchange.com/questions/84922/extract-a-part-of-one-line-from-a-file-with-sed
-	verMajor=$(sed -r -n -e '/^.+FIRMWARE'"$item"'VERSION_MAJOR/ s/^.+FIRMWARE'"$item"'VERSION_MAJOR\s+([0-9]+)/\1/p' ${fileRead})
-	verMinor=$(sed -r -n -e '/^.+FIRMWARE'"$item"'VERSION_MINOR/ s/^.+FIRMWARE'"$item"'VERSION_MINOR\s+([0-9]+)/\1/p' ${fileRead})
-	verRev=$(sed -r -n -e '/^.+FIRMWARE'"$item"'REVISION/ s/^.+FIRMWARE'"$item"'REVISION\s+([0-9]+)/\1/p' ${fileRead})
+	# I. Explain
+	# There is 2 step in this sed command
+	# 1. Find the line that containn the string: "#define FIRMWARE_VERSION_MAJOR"
+	# 2. Extract the number folow that string
+	#
+	# II. Implementation:
+	# #define	FIRMWARE_VERSION_MAJOR	        2
+	# 1. sed argument explained
+	# -r: use extended regular expression
+	# -n: cause modified part of string will be printed
+	# -e: add the script to the command to be executed (here we will ask the line first, then extract the number later)
+	# s/: for substitution
+	# /p: this will print the result
+	# 2. explained the sed command
+	# + /^#define\sFIRMWARE'"$item"'VERSION_MAJOR/
+	# This will help findind the line that contain the pattern
+	# + s/^.+FIRMWARE'"$item"'VERSION_MAJOR\s+([0-9]+)/\1/p
+	# This will find the pattern, group the number, then replace all text by the "group", means extracting the number from the line
+	verMajor=$(sed -r -n -e '/^#define\sFIRMWARE'"$item"'VERSION_MAJOR/ s/^.+FIRMWARE'"$item"'VERSION_MAJOR\s+([0-9]+)/\1/p' ${fileRead})
+	verMinor=$(sed -r -n -e '/^#define\sFIRMWARE'"$item"'VERSION_MINOR/ s/^.+FIRMWARE'"$item"'VERSION_MINOR\s+([0-9]+)/\1/p' ${fileRead})
+	verRev=$(sed -r -n -e '/^#define\sFIRMWARE'"$item"'REVISION/ s/^.+FIRMWARE'"$item"'REVISION\s+([0-9]+)/\1/p' ${fileRead})
 
 	# https://stackoverflow.com/questions/13335516/how-to-determine-whether-a-string-contains-newlines-by-using-the-grep-command
 	if [ $(echo "$verMajor" | wc -l) -gt 1 ]; then
@@ -130,9 +148,9 @@ setFirmwareVersion() {
 	fi
 
 	# Now we modify the content of file
-	sed -r -i 's/(^.+FIRMWARE'"$item"'VERSION_MAJOR\s+)([0-9]+)/\1'"$newVerMajor"'/' ${fileChange}
-	sed -r -i 's/(^.+FIRMWARE'"$item"'VERSION_MINOR\s+)([0-9]+)/\1'"$newVerMinor"'/' ${fileChange}
-	sed -r -i 's/(^.+FIRMWARE'"$item"'REVISION\s+)([0-9]+)/\1'"$newVerRev"'/' ${fileChange}
+	sed -r -i 's/(^#define\sFIRMWARE'"$item"'VERSION_MAJOR\s+)([0-9]+)/\1'"$newVerMajor"'/' ${fileChange}
+	sed -r -i 's/(^#define\sFIRMWARE'"$item"'VERSION_MINOR\s+)([0-9]+)/\1'"$newVerMinor"'/' ${fileChange}
+	sed -r -i 's/(^#define\sFIRMWARE'"$item"'REVISION\s+)([0-9]+)/\1'"$newVerRev"'/' ${fileChange}
 }
 
 bResult="n"
