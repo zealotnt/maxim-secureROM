@@ -168,118 +168,124 @@ CheckAndInstallUnzip()
 ##################################################################################################
 # main program
 ##################################################################################################
-# process arguments
-while [[ $# -gt 0 ]]
-do
-	case "$1" in
-		-p)
-		SERIAL_PORT="$2"
-		if [[ $SERIAL_PORT == "" ]]; then echoerr "-p argument required"; usage; fi
-		shift 2
-		;;
-		--port=*)
-		SERIAL_PORT="${1#*=}"
-		shift 1
-		;;
-		-t)
-		UPGRADE_TYPE="$2"
-		if [[ $UPGRADE_TYPE == "" ]]; then echoerr "-t argument required"; usage; fi
-		shift 2
-		;;
-		--type=*)
-		UPGRADE_TYPE="${1#*=}"
-		shift 1
-		;;
-		-f)
-		UPGRADE_FILE="$2"
-		if [[ $UPGRADE_FILE == "" ]]; then echoerr "-f argument required"; usage; fi
-		shift 2
-		;;
-		--file=*)
-		UPGRADE_FILE="${1#*=}"
-		shift 1
-		;;
-		-h | --help)
+main()
+{
+	# process arguments
+	while [[ $# -gt 0 ]]
+	do
+		case "$1" in
+			-p)
+			SERIAL_PORT="$2"
+			if [[ $SERIAL_PORT == "" ]]; then echoerr "-p argument required"; usage; fi
+			shift 2
+			;;
+			--port=*)
+			SERIAL_PORT="${1#*=}"
+			shift 1
+			;;
+			-t)
+			UPGRADE_TYPE="$2"
+			if [[ $UPGRADE_TYPE == "" ]]; then echoerr "-t argument required"; usage; fi
+			shift 2
+			;;
+			--type=*)
+			UPGRADE_TYPE="${1#*=}"
+			shift 1
+			;;
+			-f)
+			UPGRADE_FILE="$2"
+			if [[ $UPGRADE_FILE == "" ]]; then echoerr "-f argument required"; usage; fi
+			shift 2
+			;;
+			--file=*)
+			UPGRADE_FILE="${1#*=}"
+			shift 1
+			;;
+			-h | --help)
+			usage
+			;;
+			*)
+			echoerr "Unknown argument: '$1'"
+			usage
+			;;
+		esac
+	done
+
+	if [[ "$SERIAL_PORT" == "" ]]; then
+		echoerr "Error: you need to provide an available serial port to continue."
 		usage
-		;;
-		*)
-		echoerr "Unknown argument: '$1'"
+	fi
+
+	if [[ "$UPGRADE_FILE" == "" ]]; then
+		echoerr "Error: you need to provide a valid orcanfc firmware to continue."
 		usage
-		;;
-	esac
-done
+	fi
 
-if [[ "$SERIAL_PORT" == "" ]]; then
-	echoerr "Error: you need to provide an available serial port to continue."
-	usage
-fi
+	if [[ "$UPGRADE_TYPE" == "" ]]; then
+		echoinfo "No upgrade firmware method specified, use upgrade 'ORCANFC' as default"
+		UPGRADE_TYPE=$DEFAULT_UPG_TYPE
+	fi
 
-if [[ "$UPGRADE_FILE" == "" ]]; then
-	echoerr "Error: you need to provide a valid orcanfc firmware to continue."
-	usage
-fi
+	if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "ORCANFC" ]]; then
+		# Check if input firmware is a file
+		if [[ -f "$UPGRADE_FILE" ]]; then
+			rm -rf $ORCANFC_TEMP_EXTRACT_FOLDER
+			mkdir -p $ORCANFC_TEMP_EXTRACT_FOLDER
 
-if [[ "$UPGRADE_TYPE" == "" ]]; then
-	echoinfo "No upgrade firmware method specified, use upgrade 'ORCANFC' as default"
-	UPGRADE_TYPE=$DEFAULT_UPG_TYPE
-fi
-
-if [[ "$UPGRADE_TYPE" == "ALL" || "$UPGRADE_TYPE" == "ORCANFC" ]]; then
-	# Check if input firmware is a file
-	if [[ -f "$UPGRADE_FILE" ]]; then
-		rm -rf $ORCANFC_TEMP_EXTRACT_FOLDER
-		mkdir -p $ORCANFC_TEMP_EXTRACT_FOLDER
-
-		# Check if the file is "zip" or "tar.gz"
-		if [[ ${UPGRADE_FILE: -4} == ".zip" ]]; then
-			CheckAndInstallUnzip
-			unzip $UPGRADE_FILE -d $ORCANFC_TEMP_EXTRACT_FOLDER
-		elif [[ ${UPGRADE_FILE: -7} == ".tar.gz" ]]; then
-			tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
-		elif [[ ${UPGRADE_FILE: -4} == ".tar" ]]; then
-			tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
+			# Check if the file is "zip" or "tar.gz"
+			if [[ ${UPGRADE_FILE: -4} == ".zip" ]]; then
+				CheckAndInstallUnzip
+				unzip $UPGRADE_FILE -d $ORCANFC_TEMP_EXTRACT_FOLDER
+			elif [[ ${UPGRADE_FILE: -7} == ".tar.gz" ]]; then
+				tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
+			elif [[ ${UPGRADE_FILE: -4} == ".tar" ]]; then
+				tar -xf $UPGRADE_FILE -C $ORCANFC_TEMP_EXTRACT_FOLDER
+			else
+				echoerr 'Error: $UPGRADE_FILE: file type not regconize'
+				exit 1
+			fi
+			outputFolder=`ls $ORCANFC_TEMP_EXTRACT_FOLDER`
+			ORCANFC_FW_DIR=$ORCANFC_TEMP_EXTRACT_FOLDER/$outputFolder
+		# Check if input param is a folder
+		elif [[ -d "$UPGRADE_FILE" ]]; then
+			ORCANFC_FW_DIR=$UPGRADE_FILE
 		else
-			echoerr 'Error: $UPGRADE_FILE: file type not regconize'
+			echoerr "OrcaNfc firmware file '$UPGRADE_FILE' not found"
+			usage
 			exit 1
 		fi
-		outputFolder=`ls $ORCANFC_TEMP_EXTRACT_FOLDER`
-		ORCANFC_FW_DIR=$ORCANFC_TEMP_EXTRACT_FOLDER/$outputFolder
-	# Check if input param is a folder
-	elif [[ -d "$UPGRADE_FILE" ]]; then
-		ORCANFC_FW_DIR=$UPGRADE_FILE
+	fi
+
+	CheckValidFileType $UPGRADE_TYPE "${UPGRADE_TYPE_LIST[@]}"
+
+	if [[ "$IsBoard" == "" ]];then
+		echoinfo "Environment PC detected"
+		ORCANFC_BOARD_TOGGLE_RST=" --auto-reset-uart-rtsdts "
 	else
-		echoerr "OrcaNfc firmware file '$UPGRADE_FILE' not found"
-		usage
-		exit 1
+		echoinfo "Environment Board detected"
+		ORCANFC_BOARD_TOGGLE_RST=" --auto-reset-uart-rtsdts --resetMaxim "
+		echoinfo "Export Maxim RESET Pin"
+		echo $MAXIM_RST_PIN > /sys/class/gpio/export
 	fi
-fi
 
-CheckValidFileType $UPGRADE_TYPE "${UPGRADE_TYPE_LIST[@]}"
-
-if [[ "$IsBoard" == "" ]];then
-	echoinfo "Environment PC detected"
-	ORCANFC_BOARD_TOGGLE_RST=" --auto-reset-uart-rtsdts "
-else
-	echoinfo "Environment Board detected"
-	ORCANFC_BOARD_TOGGLE_RST=" --auto-reset-uart-rtsdts --resetMaxim "
-	echoinfo "Export Maxim RESET Pin"
-	echo $MAXIM_RST_PIN > /sys/class/gpio/export
-fi
-
-if [[ "$UPGRADE_TYPE" == "ALL" ]]; then
-	LoadMaximKey
-	if [[ $? != 0 ]]; then
-		exit 1
+	if [[ "$UPGRADE_TYPE" == "ALL" ]]; then
+		LoadMaximKey
+		if [[ $? != 0 ]]; then
+			exit 1
+		fi
+		# LoadMaximOTP
+		# if [[ $? != 0 ]]; then
+		# 	exit 1
+		# fi
 	fi
-	# LoadMaximOTP
-	# if [[ $? != 0 ]]; then
-	# 	exit 1
-	# fi
-fi
 
-if [[ "$UPGRADE_TYPE" == "ORCANFC" || "$UPGRADE_TYPE" == "ALL" ]]; then
-	UpgradeOrcaNfc
-	if [[ $? != 0 ]]; then
-		exit 1
+	if [[ "$UPGRADE_TYPE" == "ORCANFC" || "$UPGRADE_TYPE" == "ALL" ]]; then
+		UpgradeOrcaNfc
+		if [[ $? != 0 ]]; then
+			exit 1
+		fi
 	fi
-fi
+}
+
+main $@
+
