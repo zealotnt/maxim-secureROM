@@ -4,7 +4,7 @@
 ##################################################################################################
 # constant definition
 ##################################################################################################
-UPDATER_VERSION="0.0.5 NETS KEY"
+UPDATER_VERSION="0.0.7 NETS KEY"
 UPGRADE_TYPE_LIST=("ORCANFC" "ALL")
 DEFAULT_UPG_TYPE="ORCANFC"
 
@@ -17,7 +17,7 @@ ORCANFC_SCP_FIRST_TRY=100
 
 # Detect environment, and use the updater accordingly
 IsBoard=`cat /proc/cpuinfo | grep "model name" | grep "ARM"`
-ORCANFC_BOARD_TOGGLE_RST=""
+ORCANFC_SERIAL_SENDER_ARGS=""
 MAXIM_RST_PIN="81"
 
 # Places to find firmware
@@ -36,6 +36,38 @@ echoinfo() { if [[ $QUIET -ne 1 ]]; then echo -e "$SCRIPT_HDR $@${KRESET}${ENDL}
 echoerr() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLRED}$SCRIPT_HDR $@${KRESET}${ENDL}" 1>&2; fi }
 echonoti() { if [[ $QUIET -ne 1 ]]; then echo -e "${KBOLD}${KLGRN}$SCRIPT_HDR $@${KRESET}" 1>&2; fi }
 
+change_log()
+{
+	echo "
+v0.0.7
+	+ Support upgrade through Maxim's USB bootloader
+		+ add pyudev package to detect the apperance of Maxim's CDC device
+		+ add reset through PowerLine
+		+ if no serial port specified, --auto-usb-detect will be used
+V0.0.6
+	+ Change nothing, just make a different version with the 0.0.5 in NAS
+		+ The 0.0.5 don't have TEST-KEY
+		+ 0.0.6 have a TEST-KEY and NETS-KEY in it, use NETS-KEY by default, if want to use TEST-KEY need to change the updater script.
+
+V0.0.5
+	+ need to use both RTS+DTR to toggle RESET pin of Maxim
+		+ because the behavior of USB-UART chip is RTS+DTR high when closed port, RTS+DTR low when opened port.
+		+ to assure normal operation of Maxim, the open/close should not affect the reset of Maxim
+
+V0.0.4
+	+ support running on Windows machine
+	+ support reset Maxim through DTR/RTS pin of FTDI
+
+V0.0.3
+	+ support \".zip\" file for PC machine
+	+ auto detect output folder name (not just "tempFw", or "scp_out")
+
+V0.0.2
+	+ This updater version use nets key to flash to orcanfc board
+"
+	exit 1
+}
+
 usage()
 {
 	echo "Usage:"
@@ -46,6 +78,7 @@ usage()
 	echo "                                 support types: '${UPGRADE_TYPE_LIST[@]}', if no type specify, '$DEFAULT_UPG_TYPE' type will be default"
 	echo "  -f | --file=ORCANFC_FIRMWARE   Location of orcanfc firmware, should be tar/zip file, or folder contains SCP package"
 	echo "  -h | --help                    Show this message"
+	echo "  -l | --change-log              Show change-log/release-notes"
 	echo "Updater Version: $UPDATER_VERSION"
 	exit 1
 }
@@ -92,7 +125,7 @@ UpdateFirmwareSCP()
 		retVal=1
 	fi
 
-	python $ORCANFC_SCP_UPDATER -s $SERIAL_PORT -t 2 -v $firstTryParam -w packet.list $ORCANFC_BOARD_TOGGLE_RST
+	python $ORCANFC_SCP_UPDATER $ORCANFC_SERIAL_SENDER_ARGS -v $firstTryParam -w packet.list
 	scpRet=$?
 	case $scpRet in
 	0)
@@ -204,6 +237,9 @@ main()
 			-h | --help)
 			usage
 			;;
+			-l | --change-log)
+			change_log
+			;;
 			*)
 			echoerr "Unknown argument: '$1'"
 			usage
@@ -212,8 +248,12 @@ main()
 	done
 
 	if [[ "$SERIAL_PORT" == "" ]]; then
-		echoerr "Error: you need to provide an available serial port to continue."
-		usage
+		# echoerr "Error: you need to provide an available serial port to continue."
+		# usage
+		ORCANFC_SERIAL_SENDER_ARGS+=" --auto-usb-detect "
+		echoinfo "No serial port specified, use --auto-usb-detect option to Maxim serial_sender"
+	else
+		ORCANFC_SERIAL_SENDER_ARGS+=" -s $SERIAL_PORT "
 	fi
 
 	if [[ "$UPGRADE_FILE" == "" ]]; then
@@ -260,10 +300,10 @@ main()
 
 	if [[ "$IsBoard" == "" ]];then
 		echoinfo "Environment PC detected"
-		ORCANFC_BOARD_TOGGLE_RST=" --auto-reset-uart-rtsdts "
+		ORCANFC_SERIAL_SENDER_ARGS+=" --auto-reset-uart-rtsdts "
 	else
 		echoinfo "Environment Board detected"
-		ORCANFC_BOARD_TOGGLE_RST=" --auto-reset-uart-rtsdts --resetMaxim "
+		ORCANFC_SERIAL_SENDER_ARGS+=" --auto-reset-uart-rtsdts --resetMaxim --auto-reset-power-control "
 		echoinfo "Export Maxim RESET Pin"
 		echo $MAXIM_RST_PIN > /sys/class/gpio/export
 	fi
@@ -288,4 +328,3 @@ main()
 }
 
 main $@
-
