@@ -194,12 +194,12 @@ def process_packet(packet_list, options):
     con_reply = packet_list[1]
     con_ack = packet_list[2]
 
+    if options.verbose >= VERBOSE:
+        print_noti('Trying to Connect. Please Reset/Repower maxim for flashing')
+
     if options.auto_reset_uart_dtsrts:
         print 'Reset Board through UART'
         resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetUART=True, serial=bl_scp)
-
-    if options.verbose >= VERBOSE:
-        print_noti('Trying to Connect. Please Reset/Repower maxim for flashing')
 
     if options.enableMaximReset == True:
         print "Reset Maxim through GPIO"
@@ -253,11 +253,16 @@ def process_packet(packet_list, options):
     except Exception as insts:
         raise Exception()
 
-def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, serial=None):
+def resetMaxim(resetMaximNormalHigh=False, resetPower=False, resetGPIO=False, resetUART=False, serial=None):
     MAXIM_RESET_PIN = 81
     MAXIM_EXPORT_GPIO="echo %d > /sys/class/gpio/export" % MAXIM_RESET_PIN
-    MAXIM_PULL_LOW="echo " + "low " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
-    MAXIM_PULL_HIGH="echo " + "high " + " > " + "/sys/class/gpio/gpio" + str(MAXIM_RESET_PIN) + "/direction"
+    MAXIM_PULL_LOW= "echo low  > /sys/class/gpio/gpio%s/direction" % str(MAXIM_RESET_PIN)
+    MAXIM_PULL_HIGH="echo high > /sys/class/gpio/gpio%s/direction" % str(MAXIM_RESET_PIN)
+
+    BOARD_POWER_CONTROL_PIN = 82
+    BOARD_POWER_CONTROL_EXPORT_CMD = "echo %d > /sys/class/gpio/export" % BOARD_POWER_CONTROL_PIN
+    BOARD_POWER_ON_CMD  = "echo high  > /sys/class/gpio/gpio%s/direction" % str(BOARD_POWER_CONTROL_PIN)
+    BOARD_POWER_OFF_CMD = "echo low > /sys/class/gpio/gpio%s/direction" % str(BOARD_POWER_CONTROL_PIN)
 
     # Using DTR/RTS only pull low/pull high with appropriate hardware wiring
     # In this case, we are only be able to pull the Maxim low
@@ -297,6 +302,12 @@ def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, ser
             serial.setRTS(True)
             serial.setDTR(True)
 
+    if resetPower:
+        os.system(BOARD_POWER_CONTROL_EXPORT_CMD)
+        os.system(BOARD_POWER_OFF_CMD)
+        time.sleep(0.5)
+        os.system(BOARD_POWER_ON_CMD)
+
 def WaitMaximUsbBootloader(msec_timeout):
     import pyudev
 
@@ -328,9 +339,7 @@ def WaitMaximUsbBootloader(msec_timeout):
     return maxim_device
 
 # ---- MAIN
-
 if __name__ == "__main__":
-
     return_code = 0
     m = re.search('Rev(ision)*\s*:\s*(\d+)', __version__)
     if m is not None:
@@ -415,6 +424,15 @@ By default the number is 200")
 
     filename = args[0]
 
+    # orca7 can control power line of orcanfc
+    if options.auto_reset_power_control:
+        print 'Reset Board through PowerLine'
+        resetMaxim(resetPower=True)
+
+    # if the auto_usb_detect is set, we don't use the serial port name option
+    if options.serial is not None and options.auto_usb_detect == True:
+        print ("Note: options.auto_usb_detect is on, ignore serial option: %s" % options.serial)
+        options.serial = None
 
     if options.serial is None:
         if options.auto_usb_detect == True:
@@ -457,5 +475,3 @@ By default the number is 200")
         bl_scp.close()
 
     sys.exit(return_code)
-
-
