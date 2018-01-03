@@ -194,16 +194,15 @@ def process_packet(packet_list, options):
     con_reply = packet_list[1]
     con_ack = packet_list[2]
 
-    if options.auto_reset:
-        if options.verbose >= VERBOSE:
-            print 'Reset Board through UART'
+    if options.auto_reset_uart_dtsrts:
+        print 'Reset Board through UART'
         resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetUART=True, serial=bl_scp)
 
     if options.verbose >= VERBOSE:
         print_noti('Trying to Connect. Please Reset/Repower maxim for flashing')
 
     if options.enableMaximReset == True:
-        print "Try reset Maxim through GPIO"
+        print "Reset Maxim through GPIO"
         resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetGPIO=True)
 
     bbar = progressbar.ProgressBar(widgets=[progressbar.AnimatedMarker()], maxval=options.first_retry_nb - 1).start()
@@ -324,7 +323,7 @@ if __name__ == "__main__":
 
     group = OptionGroup(parser, "Timming Options")
     group.add_option("-t", "--timeout", dest="timeout", type="int",
-                      default=10, help="specifies the protocol timeout (s). \
+                      default=2, help="specifies the protocol timeout (s). \
 By default the timeout is 10s")
 
     group.add_option("-e", "--erase-timeout", dest="erase_timeout", type="int",
@@ -339,8 +338,8 @@ By default the number is 200")
 
     group = OptionGroup(parser, "Extra Options")
 
-    group.add_option("--auto-reset", action="store_true", dest="auto_reset",
-                      default=False, help="Perform a reset throw UART RTS before SCP session")
+    group.add_option("--auto-reset-uart-rtsdts", action="store_true", dest="auto_reset_uart_dtsrts",
+                      default=False, help="Perform a reset through UART RTS before SCP session")
     group.add_option("-b", "--bl-emulation", action="store_true",
                       dest="bl_emulation", default=False,
                       help="emulate the bootloader")
