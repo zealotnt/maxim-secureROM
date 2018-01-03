@@ -297,6 +297,36 @@ def resetMaxim(resetMaximNormalHigh=False, resetGPIO=False, resetUART=False, ser
             serial.setRTS(True)
             serial.setDTR(True)
 
+def WaitMaximUsbBootloader(msec_timeout):
+    import pyudev
+
+    global maxim_device
+    maxim_device = None
+    def device_event(action, device):
+        global maxim_device
+        device_dict = dict(device)
+
+        sys.stdout.write ("Get tty device: %s" % device_dict["DEVNAME"])
+        if device_dict["ID_MODEL_ID"] != "0625" and device_dict["ID_VENDOR_ID"] != "0b6a":
+            print (", it's not maxim bootloader, wait")
+            return
+        print (" => maxim device")
+        maxim_device = device_dict["DEVNAME"]
+
+    context = pyudev.Context()
+    monitor = pyudev.Monitor.from_netlink(context)
+    monitor.filter_by(subsystem='tty')
+
+    observer = pyudev.MonitorObserver(monitor, device_event)
+    observer.start()
+
+    while msec_timeout > 0 and maxim_device is None:
+        time.sleep(0.001)
+        msec_timeout -= 1
+
+    observer.stop()
+    return maxim_device
+
 # ---- MAIN
 
 if __name__ == "__main__":
@@ -337,9 +367,14 @@ By default the timeout is 5s")
 By default the number is 200")
 
     group = OptionGroup(parser, "Extra Options")
-
+    group.add_option("--auto-usb-detect", action="store_true", dest="auto_usb_detect",
+                      default=False, help="Auto detect serial comport using Maxim's VID/PID, and detect through udev")
+    group.add_option("--usb-detect-timeout", dest="usb_detect_timeout", type="int",
+                      default=5000, help="specifies the Maxim's USB detect timeout (ms). By default the timeout is 5s")
     group.add_option("--auto-reset-uart-rtsdts", action="store_true", dest="auto_reset_uart_dtsrts",
                       default=False, help="Perform a reset through UART RTS before SCP session")
+    group.add_option("--auto-reset-power-control", action="store_true", dest="auto_reset_power_control",
+                      default=False, help="Perform a reset through power control line of A9 board")
     group.add_option("-b", "--bl-emulation", action="store_true",
                       dest="bl_emulation", default=False,
                       help="emulate the bootloader")
@@ -382,7 +417,12 @@ By default the number is 200")
 
 
     if options.serial is None:
-        if os.name == 'nt':
+        if options.auto_usb_detect == True:
+            serial = WaitMaximUsbBootloader(options.usb_detect_timeout)
+            if serial is None:
+                print_err ("Can't detect Maxim's USB bootloader, exit")
+                sys.exit(-1)
+        elif os.name == 'nt':
             serial = 'COM1'
         else:
             serial = '/dev/ttyS0'
