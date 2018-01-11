@@ -37,7 +37,10 @@ class ScpPacket:
     def __init__(self, file_path, packet_name, bl_scp, options, cmd, id, way):
         self.bl_scp = bl_scp
         self.scp_cmd = None
-        self.timeout = options.timeout
+        # use erase_timeout, cause it is bigger
+        # and we don't want to reconfigure again and again
+        # self.timeout = options.timeout
+        self.timeout = options.erase_timeout
         self.file_path = file_path
         self.way = way
         self.cmd = cmd
@@ -68,7 +71,14 @@ class ScpPacket:
             print self.id + ' SEND> ' + self.cmd
 
         try:
-            self.bl_scp.setTimeout(self.timeout)
+        	# 0. orignal, we don't want to reconfigure again and again
+        	# self.bl_scp.setTimeout(self.timeout)
+            # 1. not so good solution
+            # if int(self.id) < 14:
+            #     self.bl_scp.setTimeout(self.timeout)
+            # 2. better solution, only set timeout if it is diff than last timeout
+            if self.bl_scp.getTimeout() != self.timeout:
+                self.bl_scp.setTimeout(self.timeout)
             self.bl_scp.write(self.packet_data)
             #self.bl_scp.flush()
         except Exception as inst:
@@ -161,7 +171,10 @@ class DumpPacket(ScpPacket):
     def __init__(self, file_path, packet_name, bl_scp, options, cmd, id, way):
         self.bl_scp = bl_scp
         self.scp_cmd = None
-        self.timeout = options.timeout
+        # use erase_timeout, cause it is bigger
+        # and we don't want to reconfigure again and again
+        # self.timeout = options.timeout
+        self.timeout = options.erase_timeout
         self.file_path = file_path
         self.way = way
         self.cmd = cmd

@@ -100,6 +100,9 @@ class Win32Serial(SerialBase):
 
 
     def _reconfigurePort(self):
+        # Tam: enable to see if windows reconfigure again and again
+        # this cause transmit/receive error on some windows machine
+        # print ("_reconfigurePort")
         """Set communication parameters on opened port."""
         if not self.hComPort:
             raise SerialException("Can only operate on a valid port handle")
