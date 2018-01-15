@@ -1,10 +1,9 @@
 __author__ = 'bvinot'
 
-
 _ERROR_MSG = [['  ' for i in range(40)] for j in range(20)]
 from BootloaderScp import BootloaderScp, ScpCmd
 from utils import *
-
+import sys
 
 def load_error_file(chip_code, rom_code, verbose, chip_name):
     """
@@ -69,6 +68,7 @@ class ScpPacket:
     def send(self):
         if self.verbose >= EXTRA_VERBOSE:
             print self.id + ' SEND> ' + self.cmd
+            sys.stdout.flush()
 
         try:
         	# 0. orignal, we don't want to reconfigure again and again
@@ -89,6 +89,7 @@ class ScpPacket:
     def receive(self):
         if self.verbose >= EXTRA_VERBOSE:
                 print self.id + ' WAIT> ' + self.cmd
+                sys.stdout.flush()
         try:
             self.scp_cmd = self.bl_scp.readPacket(self.is_connection_packet)
             if self.scp_cmd is None:
