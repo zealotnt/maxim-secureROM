@@ -1,0 +1,46 @@
+# From mail:
+```
+Hi Peter,
+
+There is a quick way to improve the boot time for MAX32550 on your existing board.
+
+By default, the boot-up time of MAX32550 includes wait time periods for UART and USB download command, which are 2s each and counts up to 4s in total. In this case, MAX32550 requires ~6s to boot up.
+
+This wait time can be turned off or reduced. Since the USB download does not work in MAX32550 A3, USB wait times can be turned off, meanwhile, UART wait time can be reduced to 250ms without affecting future FW updates. So, in total around 3.75s boot time can be save.
+
+I have written a script to reduce the UART wait time to 250ms as attached.
+
+The usage is (Please download the latest Angela 1.2.4 from the FTP first before running the script):
+1. Copy the gen_OTP_VUSB_USB_0ms_UART_250ms.sh file to angela's Host/customer_script/script
+2. In cygwin, go to the same path, then run
+./gen_OTP_UART_250ms.sh OTP_UART_250ms ../keys/maximtestcrk.key
+(OTP_UART_250ms is the output path, while ../keys/maximtestcrk.key is the private key)
+
+Then SCP packets can be generated and can be downloaded to the chip by ./sendscp.sh
+
+After changing the UART wait time to 250ms, please make use of Angela 1.2.4 for easier FW update. 
+
+Regards,
+Keith
+```
+
+# Commands:
+./gen_OTP_UART_250ms.sh OTP_UART_250ms ../keys/maximtestcrk.key
+./gen_OTP_VUSB_6000ms_USB_2000ms_UART_250ms.sh OTP_VUSB_6000ms_USB_2000ms_UART_250ms ../keys/maximtestcrk.key
+
+## Meaning of V, U in OTP settings
+
+```
+Hi Bao,
+
+In the script file, there are three lines for setting the timeout of "0, V and U"
+0 means "UART0". If you put the value as 0000 in the script, UART wait time will be turned off.
+For USB wait time, there are two:
+V- If VBUS pin is high, the timeout for the chip to wait for USB enumeration with PC. Default time is 6s.
+U-If USB enumeration success, the timeout for the virtual COM port appears on PC. Default time is 2s.
+
+You can just modify the values of U and V for changing the timeout. As a reminder, please note that the value is inversed for the two bytes in the script file. For example, if you want to set 6s = 6000ms = 0x1770, then "7017" should be used as the value in the script file.
+
+Thanks,
+Keith
+```
