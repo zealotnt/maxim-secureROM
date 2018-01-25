@@ -198,13 +198,13 @@ def process_packet(packet_list, options):
     if options.verbose >= VERBOSE:
         print_noti('Trying to Connect. Please Reset/Repower maxim for flashing')
 
-    if options.auto_reset_uart_dtsrts:
-        #print 'Reset Board through UART'
-        #resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetUART=True, serial=bl_scp)
+    if options.serial is not None and options.auto_reset_uart_dtsrts:
+        print 'Reset Board through UART'
+        resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetUART=True, serial=bl_scp)
 
-    if options.enableMaximReset == True:
-        #print "Reset Maxim through GPIO"
-        #resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetGPIO=True)
+    if options.serial is not None and options.enableMaximReset == True:
+        print "Reset Maxim through GPIO"
+        resetMaxim(resetMaximNormalHigh=options.resetMaximNormalHigh, resetGPIO=True)
 
     bbar = progressbar.ProgressBar(widgets=[progressbar.AnimatedMarker()], maxval=options.first_retry_nb - 1).start()
     for i in bbar((i for i in range(options.first_retry_nb))):
