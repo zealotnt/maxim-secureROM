@@ -456,10 +456,10 @@ By default the number is 200")
 
     try:
         packets_list = parse_scpcmd_file(filename, bl_scp, options)
-        if sum(1 for item in iter(list_ports.grep(serial))) == 0:
-            print 'Waiting for device ' + serial + ' to appears'
-        while sum(1 for item in iter(list_ports.grep(serial))) == 0:
-            pass
+        # if sum(1 for item in iter(list_ports.grep(serial))) == 0:
+        #     print 'Waiting for device ' + serial + ' to appears'
+        # while sum(1 for item in iter(list_ports.grep(serial))) == 0:
+        #     pass
         process_packet(packets_list, options)
         print_ok("SCP session OK")
     except RuntimeError:
